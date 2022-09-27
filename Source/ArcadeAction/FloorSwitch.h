@@ -35,6 +35,15 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Triggers")
 	FVector InitialFloorSwitchLocation;
 
+	FTimerHandle SwichHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Triggers")
+	float SwitchDelay;
+
+	bool bCharacterStilOnSwitch;
+
+	void CloseDoor();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -62,7 +71,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "FloorSwitch")
 	void UpdateDoorLocationInZ(float z);
-
 
 	UFUNCTION(BlueprintCallable, Category = "FloorSwitch")
 	void UpdateFloorLocationInZ(float z);

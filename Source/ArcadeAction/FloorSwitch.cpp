@@ -6,7 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 
 // Sets default values
-AFloorSwitch::AFloorSwitch()
+AFloorSwitch::AFloorSwitch(): SwitchDelay(2.f), bCharacterStilOnSwitch(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,6 +27,15 @@ AFloorSwitch::AFloorSwitch()
 	Door = CreateDefaultSubobject<UStaticMeshComponent>("Door");
 	Door->SetupAttachment(GetRootComponent());
 
+}
+
+void AFloorSwitch::CloseDoor()
+{
+	if (!bCharacterStilOnSwitch)
+	{
+		LowerDoor();
+		RaiseFloorSwitch();	
+	}
 }
 
 // Called when the game starts or when spawned
@@ -50,16 +59,24 @@ void AFloorSwitch::Tick(float DeltaTime)
 
 void AFloorSwitch::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "Begin Overlap");
+	if (!bCharacterStilOnSwitch)
+	{
+		bCharacterStilOnSwitch = true;
+	}
+
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "Begin Overlap");
 	RaiseDoor();
 	LowerFloorSwitch();
 }
 
 void AFloorSwitch::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "End Overlap");
-	LowerDoor();
-	RaiseFloorSwitch();
+	if (bCharacterStilOnSwitch)
+	{
+		bCharacterStilOnSwitch = false;
+	}
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "End Overlap");
+	GetWorldTimerManager().SetTimer(SwichHandle, this, &ThisClass::CloseDoor,SwitchDelay);
 }
 
 void AFloorSwitch::UpdateDoorLocationInZ(float z)
