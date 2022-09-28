@@ -18,6 +18,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Platform")
 	class UStaticMeshComponent* PlatformMesh;
 
+	UPROPERTY(EditAnyWhere, Category = "Platform")
+	FVector StartPoint;
+
+	UPROPERTY(EditAnyWhere, Category = "Platform", meta = (MakeEditWidget = "true"))
+	FVector EndPoint;
+
+	UPROPERTY(EditAnyWhere, Category = "Platform")
+	float PlatformSpeed;
+
+	UPROPERTY(EditAnyWhere, Category = "Platform")
+	float PlatformTime;
+
+	float Distance;
+
+	FTimerHandle PlatformTimer;
+	
+	UPROPERTY(EditAnyWhere, Category = "Platform")
+	bool bInterping;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -26,4 +45,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
+	void ToggleInterping();
+
+	void SwapVector(FVector& V1, FVector& V2);
 };
