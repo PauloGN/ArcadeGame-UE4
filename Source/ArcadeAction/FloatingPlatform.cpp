@@ -6,8 +6,8 @@
 #include "TimerManager.h"
 
 // Sets default values
-AFloatingPlatform::AFloatingPlatform():StartPoint(FVector(0.f)), EndPoint(FVector(0.f)), PlatformSpeed(4.f),
-	bInterping(false), PlatformTime(1.f), Distance(0.f)
+AFloatingPlatform::AFloatingPlatform():StartPoint(FVector(0.f)), EndPoint(FVector(0.f)), InterpolationSpeed(4.f),
+	bInterping(false), PlatformStopTime(1.f), Distance(0.f)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -26,7 +26,9 @@ void AFloatingPlatform::BeginPlay()
 	StartPoint = GetActorLocation();
 	EndPoint += StartPoint;
 
-	GetWorldTimerManager().SetTimer(PlatformTimer, this, &ThisClass::ToggleInterping, PlatformTime);
+	//sets a delay before tells the platform to start interping and moving ahead
+	GetWorldTimerManager().SetTimer(PlatformTimer, this, &ThisClass::ToggleInterping, PlatformStopTime);
+	//Total distance from the origin to the target
 	Distance = (EndPoint - StartPoint).Size();
 }
 
@@ -38,15 +40,19 @@ void AFloatingPlatform::Tick(float DeltaTime)
 	if (bInterping)
 	{
 		FVector CurrentLocation = GetActorLocation();
-		FVector Interp = FMath::VInterpTo(CurrentLocation, EndPoint, DeltaTime, PlatformSpeed);
+		//Makes the travel smoother from the origin to the target Point baseed on Delta Time and speed of interpolation;
+		FVector Interp = FMath::VInterpTo(CurrentLocation, EndPoint, DeltaTime, InterpolationSpeed);
+		//Get the frame position ahead calculeted and set the new Interpolate Location
 		SetActorLocation(Interp);
 
+		//Get the Distance traveled to tell the algorithim when it should swap the direction//How far we've traveled
 		float DistanceTraveled = (GetActorLocation() - StartPoint).Size();
 
 		if (Distance - DistanceTraveled <= 0.5f)
 		{
 			ToggleInterping();
-			GetWorldTimerManager().SetTimer(PlatformTimer, this, &ThisClass::ToggleInterping, PlatformTime);
+			GetWorldTimerManager().SetTimer(PlatformTimer, this, &ThisClass::ToggleInterping, PlatformStopTime);
+			//Reverse origin and destination points
 			SwapVector(StartPoint, EndPoint);
 		}
 	}
