@@ -14,11 +14,28 @@ class ARCADEACTION_API AItem : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AItem();
+
 	/** Base Shape Collision*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Collison")
 	class USphereComponent* CollisionVolume;
 
+	/** Base mesh component*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	class UStaticMeshComponent* MeshComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	class UParticleSystemComponent* IdleParticleComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particles")
+	class UParticleSystem* OverlapParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sounds")
+	class USoundCue* OverlapSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Functionalities")
+	bool bSpinning;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Functionalities")
+	float RotationRate;
 
 protected:
 	// Called when the game starts or when spawned
