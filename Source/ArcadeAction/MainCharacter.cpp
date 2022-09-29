@@ -31,6 +31,18 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);//Rotation speed on yaw axis
 	GetCharacterMovement()->JumpZVelocity = 650.f;//How hing the character jumps by default
 	GetCharacterMovement()->AirControl = 0.5f;
+
+	/**
+	* 
+	*	Player Stats Default values
+	* 
+	*/
+		MaxHealth = 100.f;
+		Health = 75.f;
+		MaxStamina = 350.f;
+		Stamina = 120.f;
+		Coins = 0;
+
 }
 
 // Called when the game starts or when spawned
@@ -115,5 +127,37 @@ void AMainCharacter::LookUpAtRate(float rate)
 		const float rateInput = rate * BaseTurnRate * world->GetDeltaSeconds();
 		AddControllerPitchInput(rateInput);
 	}
+}
+
+void AMainCharacter::DecrementHealth(const float dmg)
+{
+	if (Health - dmg <= 0.f)
+	{
+		Health -= dmg;
+		Die();
+	}
+	else
+	{
+		Health -= dmg;
+	}
+
+}
+
+void AMainCharacter::IncrementCoin(const int32 value)
+{
+	if (Coins + value <= 1000)
+	{
+		Coins += value;
+	}
+	else
+	{
+		//Max coins collection
+		Coins = 1000;
+	}
+}
+
+void AMainCharacter::Die()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Game Over...");
 }
 

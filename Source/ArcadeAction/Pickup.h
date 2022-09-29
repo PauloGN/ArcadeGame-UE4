@@ -18,6 +18,9 @@ public:
 
 	APickup();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Coins Properties")
+	int32 CoinAmount;
+
 	//UFUNCTION() from the parent class
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)override;
 	//UFUNCTION() from the parent class

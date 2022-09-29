@@ -23,4 +23,6 @@ public:
 	//UFUNCTION() from the parent class
 		virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
 	
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosive Properties")
+		float Damage;
 };
