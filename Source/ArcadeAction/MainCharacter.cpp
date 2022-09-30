@@ -39,10 +39,16 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
 	*/
 		MaxHealth = 100.f;
 		Health = 75.f;
-		MaxStamina = 350.f;
+		MaxStamina = 150.f;
 		Stamina = 120.f;
 		Coins = 0;
-
+		RunninSpeed = 650.f;
+		SprintingSpeed = 900.f;
+		MovementStatus = EMovementStatus::EMS_Normal;
+		StaminaStatus = EStaminaStatus::ESS_Normal;
+		bShiftKeydown = false;
+		StaminaDrainRate = 25.f;
+		MinSprintStamina = 50.f;
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +63,107 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//how much the stamina should change in this particular frame
+	float DeltaStamina = StaminaDrainRate * DeltaTime;
+
+
+	switch (StaminaStatus)
+	{
+	case EStaminaStatus::ESS_Normal:
+
+		if (bShiftKeydown)
+		{
+			if (Stamina - DeltaStamina <= MinSprintStamina)
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_BelowMinimum);
+				Stamina -= DeltaStamina;
+			}
+			else
+			{
+				Stamina -= DeltaStamina;
+			}
+			GEngine->AddOnScreenDebugMessage(1, 1.f,FColor::Yellow, "NORMAL STATE Key ----> down");
+			SetMovementStatus(EMovementStatus::EMS_Sprinting);
+		}
+		else//Shift is up
+		{
+			if(Stamina + DeltaStamina >= MaxStamina)
+			{
+				Stamina = MaxStamina;
+			}
+			else
+			{
+				Stamina += DeltaStamina;
+			}
+			SetMovementStatus(EMovementStatus::EMS_Normal);
+			GEngine->AddOnScreenDebugMessage(1, 15.f, FColor::Yellow, "NORMAL STATE Key ----> UP");
+
+		}
+		break;
+	case EStaminaStatus::ESS_BelowMinimum:
+
+		if (bShiftKeydown)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Yellow, "BELOW STATE Key ----> down");
+
+			if (Stamina - DeltaStamina <= 0.f)
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_Exhausted);
+				Stamina = 0.f;
+				SetMovementStatus(EMovementStatus::EMS_Normal);
+
+			}
+			else
+			{
+				Stamina -= DeltaStamina;
+				SetMovementStatus(EMovementStatus::EMS_Sprinting);
+			}
+		}
+		else//Shift is up
+		{
+			if (Stamina + DeltaStamina >= MinSprintStamina)
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_Normal);
+				Stamina += DeltaStamina;
+			}
+			else
+			{
+				Stamina += DeltaStamina;
+			}
+			SetMovementStatus(EMovementStatus::EMS_Normal);
+			GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Yellow, "BELOW STATE Key ----> Up");
+
+		}
+		break;
+	case EStaminaStatus::ESS_Exhausted:
+		if (bShiftKeydown)
+		{
+			Stamina = 0.f;
+		}
+		else//Shift is up
+		{
+			SetStaminaStatus(EStaminaStatus::ESS_ExhaustedRecovering);
+			Stamina += DeltaStamina;
+		}
+		SetMovementStatus(EMovementStatus::EMS_Normal);
+		break;
+	case EStaminaStatus::ESS_ExhaustedRecovering:
+		if (Stamina + DeltaStamina >= MinSprintStamina)
+		{
+			SetStaminaStatus(EStaminaStatus::ESS_Normal);
+			Stamina += DeltaStamina;
+		}
+		else//Shift is up
+		{
+			Stamina += DeltaStamina;
+		}
+		SetMovementStatus(EMovementStatus::EMS_Normal);
+		break;
+	case EStaminaStatus::ESS_MAX:
+		break;
+	default:
+		break;
+	}
 }
 
 // Called to bind functionality to input
@@ -68,6 +175,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	//Action Inputs 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ThisClass::ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::Sprinting_ShiftKeyDown);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::Running_ShiftKeyUp);
 
 	//KeyBoard inputs
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -127,6 +237,41 @@ void AMainCharacter::LookUpAtRate(float rate)
 		const float rateInput = rate * BaseTurnRate * world->GetDeltaSeconds();
 		AddControllerPitchInput(rateInput);
 	}
+}
+
+void AMainCharacter::SetMovementStatus(EMovementStatus eStatus)
+{
+
+	MovementStatus = eStatus;
+
+	switch (MovementStatus)
+	{
+	case EMovementStatus::EMS_Normal:
+
+		GetCharacterMovement()->MaxWalkSpeed = RunninSpeed;
+
+		break;
+	case EMovementStatus::EMS_Sprinting:
+
+		GetCharacterMovement()->MaxWalkSpeed = SprintingSpeed;
+
+		break;
+	case EMovementStatus::EMS_MAX:
+		break;
+		GetCharacterMovement()->MaxWalkSpeed = RunninSpeed;
+	}
+}
+
+void AMainCharacter::Sprinting_ShiftKeyDown()
+{
+	bShiftKeydown = true;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Sprinting...");
+
+}
+
+void AMainCharacter::Running_ShiftKeyUp()
+{
+	bShiftKeydown = false;
 }
 
 void AMainCharacter::DecrementHealth(const float dmg)

@@ -6,6 +6,27 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EMovementStatus : uint8
+{
+	EMS_Normal UMETA(DisplayName, "Normal"),
+	EMS_Sprinting UMETA(DisplayName, "Sprinting"),
+	EMS_MAX UMETA(DisplayName, "DefaultMAX")
+};
+
+
+UENUM(BlueprintType)
+enum class EStaminaStatus : uint8
+{
+	ESS_Normal UMETA(DisplayName, "Normal"),
+	ESS_BelowMinimum UMETA(DisplayName, "BelowMinimum"),
+	ESS_Exhausted UMETA(DisplayName, "Exhausted"),
+	ESS_ExhaustedRecovering UMETA(DisplayName, "Exhausted"),
+	ESS_MAX UMETA(DisplayName, "DefaultMAX")
+};
+
+
+
 UCLASS()
 class ARCADEACTION_API AMainCharacter : public ACharacter
 {
@@ -33,6 +54,12 @@ public:
 	/* 
 	*/
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	EMovementStatus MovementStatus;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	EStaminaStatus StaminaStatus;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Stats")
 	float MaxHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
@@ -43,6 +70,18 @@ public:
 	float Stamina;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	int32 Coins;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
+	float RunninSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
+	float SprintingSpeed;
+
+	bool bShiftKeydown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
+	float StaminaDrainRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
+	float MinSprintStamina;
 
 protected:
 	// Called when the game starts or when spawned
@@ -76,9 +115,17 @@ public:
 
 	/**
 	*
-	* Character 
+	* Character properties access
 	* 
 	*/
+
+	void SetMovementStatus(EMovementStatus eStatus);
+	FORCEINLINE void SetStaminaStatus(EStaminaStatus eStatus){ StaminaStatus = eStatus; }
+
+	//Pressed down to enable spriting
+	void Sprinting_ShiftKeyDown();
+	//Released to stops printing 
+	void Running_ShiftKeyUp();
 
 	void DecrementHealth(const float dmg);
 	void IncrementCoin(const int32 value);
