@@ -36,6 +36,18 @@ public:
 	// Sets default values for this character's properties
 	AMainCharacter();
 
+	/***
+	* Agregation
+	***/
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items");
+	class AWeapon* EquippedWeapon;
+
+	TArray<FVector> PickUpLocations;
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPickUpLocations();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
@@ -121,6 +133,7 @@ public:
 
 	void SetMovementStatus(EMovementStatus eStatus);
 	FORCEINLINE void SetStaminaStatus(EStaminaStatus eStatus){ StaminaStatus = eStatus; }
+	FORCEINLINE void SetEquippedWeapon(AWeapon* weapToSet){ EquippedWeapon = weapToSet; }
 
 	//Pressed down to enable spriting
 	void Sprinting_ShiftKeyDown();

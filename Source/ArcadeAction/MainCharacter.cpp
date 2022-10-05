@@ -5,6 +5,7 @@
 #include "GameFrameWork/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFrameWork/CharacterMovementComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
@@ -49,6 +50,14 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
 		bShiftKeydown = false;
 		StaminaDrainRate = 25.f;
 		MinSprintStamina = 50.f;
+}
+
+void AMainCharacter::ShowPickUpLocations()
+{
+	for (size_t i = 0; i < PickUpLocations.Num(); i++)
+	{
+		UKismetSystemLibrary::DrawDebugSphere(this, PickUpLocations[i] + FVector(0.f, 0.f, 100.f), 15.f, 12, FColor::Blue, 5.f, 2.f);
+	}
 }
 
 // Called when the game starts or when spawned

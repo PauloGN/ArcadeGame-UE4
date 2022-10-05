@@ -20,6 +20,7 @@ void AExplosive::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 		if (MainCharREF)
 		{
 			MainCharREF->DecrementHealth(Damage);
+			Destroy();
 		}
 
 	}
