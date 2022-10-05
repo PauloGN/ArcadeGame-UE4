@@ -37,11 +37,14 @@ public:
 	AMainCharacter();
 
 	/***
-	* Agregation
+	* aggregation
 	***/
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items");
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	class AWeapon* EquippedWeapon;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	class AItem* ActiveOverlappingItem;
 
 	TArray<FVector> PickUpLocations;
 
@@ -122,6 +125,8 @@ public:
 	*/
 	void LookUpAtRate(float rate);
 
+	bool bActionPerformed;
+
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE UCameraComponent* GetCameraComponent() const { return FollowCamera; }
 
@@ -134,6 +139,7 @@ public:
 	void SetMovementStatus(EMovementStatus eStatus);
 	FORCEINLINE void SetStaminaStatus(EStaminaStatus eStatus){ StaminaStatus = eStatus; }
 	FORCEINLINE void SetEquippedWeapon(AWeapon* weapToSet){ EquippedWeapon = weapToSet; }
+	FORCEINLINE void SetActiveOverlappingItem(AItem* item){ ActiveOverlappingItem = item; }
 
 	//Pressed down to enable spriting
 	void Sprinting_ShiftKeyDown();
@@ -143,4 +149,8 @@ public:
 	void DecrementHealth(const float dmg);
 	void IncrementCoin(const int32 value);
 	void Die();
+
+	void ActionPerformed_E_Pressed();
+	void ActionPerformed_E_UP();
+
 };

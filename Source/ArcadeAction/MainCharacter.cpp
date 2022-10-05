@@ -6,9 +6,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Weapon.h"
 
 // Sets default values
-AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
+AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),ActiveOverlappingItem(nullptr), EquippedWeapon(nullptr)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -48,6 +49,7 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f)
 		MovementStatus = EMovementStatus::EMS_Normal;
 		StaminaStatus = EStaminaStatus::ESS_Normal;
 		bShiftKeydown = false;
+		bActionPerformed = false;
 		StaminaDrainRate = 25.f;
 		MinSprintStamina = 50.f;
 }
@@ -187,6 +189,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::Sprinting_ShiftKeyDown);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ThisClass::Running_ShiftKeyUp);
+	//E key pressed
+	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &ThisClass::ActionPerformed_E_Pressed);
+	PlayerInputComponent->BindAction("Action", IE_Released, this, &ThisClass::ActionPerformed_E_UP);
 
 	//KeyBoard inputs
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -315,3 +320,27 @@ void AMainCharacter::Die()
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Game Over...");
 }
 
+
+void AMainCharacter::ActionPerformed_E_Pressed()
+{
+	bActionPerformed = true;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key pressed...");
+
+	if (ActiveOverlappingItem)
+	{
+		AWeapon* wep = Cast<AWeapon>(ActiveOverlappingItem);
+
+		if (wep)
+		{
+			wep->Equip(this);
+			SetActiveOverlappingItem(nullptr);
+		}
+
+	}
+
+}
+void AMainCharacter::ActionPerformed_E_UP()
+{
+	bActionPerformed = false;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key Released...");
+}
