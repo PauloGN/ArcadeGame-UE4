@@ -167,4 +167,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | Movement")
 	void Attackfinished();
 
+private:
+
+	FName GetAttackAnimationName();
+
 };

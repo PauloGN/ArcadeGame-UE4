@@ -378,14 +378,14 @@ void AMainCharacter::AttackPerformed_LMB_Pressed()
 		bAttacking = true;
 
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-		const float SpeedRate = 1.35f;
+		const float SpeedRate = 2.f;
+		const FName AttackFname = GetAttackAnimationName();
 
 		if (AnimInstance && CombatMontage)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "ATTACKING...");
 			AnimInstance->Montage_Play(CombatMontage, SpeedRate);
-			AnimInstance->Montage_JumpToSection(FName("Attack_2"), CombatMontage);
+			AnimInstance->Montage_JumpToSection(AttackFname, CombatMontage);
 		}
 	}
 }
@@ -407,6 +407,31 @@ void AMainCharacter::Attackfinished()
 			AttackPerformed_LMB_Pressed();
 		}
 
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Not ATTACKING...");
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Attack Finish called via blueprint (Animation)...");
 	}
+}
+
+//Generate radon attack
+FName AMainCharacter::GetAttackAnimationName()
+{
+
+	int32 Selection = FMath::RandRange(0, 1);
+	FName AttackName = FName("null");
+
+
+	switch (Selection)
+	{
+	case 0:
+		AttackName = TEXT("Attack_1");
+		break;
+	case 1:
+		AttackName = TEXT("Attack_2");
+		break;
+
+	default:
+		;
+	}
+
+	return AttackName;
+
 }
