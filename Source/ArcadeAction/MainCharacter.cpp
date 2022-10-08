@@ -7,6 +7,8 @@
 #include "GameFrameWork/CharacterMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Weapon.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),ActiveOverlappingItem(nullptr), EquippedWeapon(nullptr)
@@ -52,6 +54,10 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),Activ
 		bActionPerformed = false;
 		StaminaDrainRate = 25.f;
 		MinSprintStamina = 50.f;
+
+		//Animation
+		CombatMontage = nullptr;
+		bAttacking = false;
 }
 
 void AMainCharacter::ShowPickUpLocations()
@@ -192,6 +198,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	//E key pressed
 	PlayerInputComponent->BindAction("Action", IE_Pressed, this, &ThisClass::ActionPerformed_E_Pressed);
 	PlayerInputComponent->BindAction("Action", IE_Released, this, &ThisClass::ActionPerformed_E_UP);
+	//Left Mouse Buttom key pressed
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ThisClass::AttackPerformed_LMB_Pressed);
+	PlayerInputComponent->BindAction("Attack", IE_Released, this, &ThisClass::AttackPerformed_LMB_UP);
 
 	//KeyBoard inputs
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
@@ -353,4 +362,32 @@ void AMainCharacter::ActionPerformed_E_UP()
 {
 	bActionPerformed = false;
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key Released...");
+}
+
+void AMainCharacter::AttackPerformed_LMB_Pressed()
+{
+	if (EquippedWeapon)
+	{
+		
+		bAttacking = true;
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		const float SpeedRate = 1.35f;
+
+		if (AnimInstance && CombatMontage)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "ATTACKING...");
+			AnimInstance->Montage_Play(CombatMontage, SpeedRate);
+			AnimInstance->Montage_JumpToSection(FName("Attack_2"), CombatMontage);
+		}
+	}
+}
+void AMainCharacter::AttackPerformed_LMB_UP()
+{
+	if (EquippedWeapon)
+	{
+		bAttacking = false;
+		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Not ATTACKING...");
+	}
 }

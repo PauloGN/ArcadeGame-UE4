@@ -69,6 +69,9 @@ public:
 	/* 
 	*/
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Amimation")
+	bool bAttacking;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	EMovementStatus MovementStatus;
 
@@ -97,6 +100,9 @@ public:
 	float StaminaDrainRate;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
 	float MinSprintStamina;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Amimation")
+	class UAnimMontage* CombatMontage;
 
 protected:
 	// Called when the game starts or when spawned
@@ -150,8 +156,11 @@ public:
 	void DecrementHealth(const float dmg);
 	void IncrementCoin(const int32 value);
 	void Die();
-
+	//E key
 	void ActionPerformed_E_Pressed();
 	void ActionPerformed_E_UP();
+	//Left mouse buttom
+	void AttackPerformed_LMB_Pressed();
+	void AttackPerformed_LMB_UP();
 
 };
