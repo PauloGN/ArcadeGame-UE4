@@ -10,7 +10,7 @@
 #include "Particles/ParticleSystemComponent.h"
 
 
-AWeapon::AWeapon():OnEquippeSound(nullptr)
+AWeapon::AWeapon():OnEquippeSound(nullptr), WeaponState(EWeaponState::EWS_Pickup)
 {
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
@@ -22,7 +22,7 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	Super::OnOverlapBegin(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 
-	if (OtherActor)
+	if ((WeaponState == EWeaponState::EWS_Pickup) && OtherActor)
 	{
 		AMainCharacter* CharREF = Cast<AMainCharacter>(OtherActor);
 
@@ -44,9 +44,7 @@ void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 
 		if (CharREF)
 		{
-
 			CharREF->SetActiveOverlappingItem(nullptr);
-			//Equip(CharREF);
 		}
 	}
 }
@@ -66,15 +64,18 @@ void AWeapon::Equip(AMainCharacter* Char)
 		{
 			RightHandSocket->AttachActor(this, Char->GetMesh());
 			bSpinning = false;
+
 			//Set the weapon ref to the char
 			Char->SetEquippedWeapon(this);
+			Char->SetActiveOverlappingItem(nullptr);
+
 		}
 		//Play sound effect
-		if (OnEquippeSound)
+		if (OnEquippeSound && WeaponState == EWeaponState::EWS_Pickup)
 		{
 			UGameplayStatics::PlaySound2D(this, OnEquippeSound);
 			IdleParticleComponent->Deactivate();
-
+			WeaponState = EWeaponState::EWS_Equipped;
 		}
 	}
 }

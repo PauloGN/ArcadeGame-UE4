@@ -137,8 +137,9 @@ public:
 	*/
 
 	void SetMovementStatus(EMovementStatus eStatus);
+	void SetEquippedWeapon(AWeapon* weapToSet);
+
 	FORCEINLINE void SetStaminaStatus(EStaminaStatus eStatus){ StaminaStatus = eStatus; }
-	FORCEINLINE void SetEquippedWeapon(AWeapon* weapToSet){ EquippedWeapon = weapToSet; }
 	FORCEINLINE void SetActiveOverlappingItem(AItem* item){ ActiveOverlappingItem = item; }
 
 	//Pressed down to enable spriting

@@ -276,6 +276,16 @@ void AMainCharacter::SetMovementStatus(EMovementStatus eStatus)
 	}
 }
 
+void AMainCharacter::SetEquippedWeapon(AWeapon* weap)
+{
+
+	if (EquippedWeapon && weap->WeaponState == EWeaponState::EWS_Pickup)
+	{
+		EquippedWeapon->Destroy();
+	}
+	EquippedWeapon = weap;
+}
+
 void AMainCharacter::Sprinting_ShiftKeyDown()
 {
 	bShiftKeydown = true;

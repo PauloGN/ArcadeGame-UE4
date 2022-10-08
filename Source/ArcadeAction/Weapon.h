@@ -6,6 +6,14 @@
 #include "Item.h"
 #include "Weapon.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	EWS_Pickup	 UMETA(DisplayName = "Pickup"),
+	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
+};
+
 /**
  * 
  */
@@ -17,6 +25,9 @@ class ARCADEACTION_API AWeapon : public AItem
 public:
 
 	AWeapon();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | States")
+	EWeaponState WeaponState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	class USoundCue* OnEquippeSound;
@@ -34,4 +45,7 @@ public:
 
 	void Equip(class AMainCharacter* Char);
 	
+	FORCEINLINE void SetWeaponState(EWeaponState EWS){ WeaponState = EWS; }
+	FORCEINLINE EWeaponState SetWeaponState(){ return WeaponState; }
+
 };
