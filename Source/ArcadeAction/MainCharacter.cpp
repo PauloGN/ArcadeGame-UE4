@@ -58,6 +58,7 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),Activ
 		//Animation
 		CombatMontage = nullptr;
 		bAttacking = false;
+		bLeftMouseButtomDown = false;
 }
 
 void AMainCharacter::ShowPickUpLocations()
@@ -216,7 +217,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveForward(float input)
 {
-	if ((Controller != nullptr) && (input != 0.0f))
+	uint8 bCanMoveForward = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
+	if (bCanMoveForward)
 	{
 		//Find out witch way is forward from the controller perpective
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -230,7 +232,10 @@ void AMainCharacter::MoveForward(float input)
 
 void AMainCharacter::MoveRight(float input)
 {
-	if ((Controller != nullptr) && (input != 0.0f))
+
+	uint8 bCanMoveRight = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
+
+	if (bCanMoveRight)
 	{
 		//Find out witch way is forward from the controller perpective
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -366,7 +371,8 @@ void AMainCharacter::ActionPerformed_E_UP()
 
 void AMainCharacter::AttackPerformed_LMB_Pressed()
 {
-	if (EquippedWeapon)
+	bLeftMouseButtomDown = true;
+	if (EquippedWeapon && (!bAttacking))
 	{
 		
 		bAttacking = true;
@@ -383,11 +389,24 @@ void AMainCharacter::AttackPerformed_LMB_Pressed()
 		}
 	}
 }
+
 void AMainCharacter::AttackPerformed_LMB_UP()
+{
+	bLeftMouseButtomDown = false;
+}
+
+void AMainCharacter::Attackfinished()
 {
 	if (EquippedWeapon)
 	{
 		bAttacking = false;
+
+		//if the mouse keep down attack again
+		if (bLeftMouseButtomDown)
+		{
+			AttackPerformed_LMB_Pressed();
+		}
+
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Not ATTACKING...");
 	}
 }

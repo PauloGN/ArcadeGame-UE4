@@ -95,6 +95,7 @@ public:
 	float SprintingSpeed;
 
 	bool bShiftKeydown;
+	bool bLeftMouseButtomDown;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats | Movement")
 	float StaminaDrainRate;
@@ -162,5 +163,8 @@ public:
 	//Left mouse buttom
 	void AttackPerformed_LMB_Pressed();
 	void AttackPerformed_LMB_UP();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats | Movement")
+	void Attackfinished();
 
 };
