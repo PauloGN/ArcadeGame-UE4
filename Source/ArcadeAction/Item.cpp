@@ -6,6 +6,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "MainCharacter.h"
 
 // Sets default values
 AItem::AItem(): bSpinning(false), RotationRate(1.0f)
@@ -54,13 +55,21 @@ void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 {
 	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "Base::Begin Overlap");
 
-	if (OverlapParticle != nullptr)
+	if (OtherActor)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OverlapParticle, GetActorLocation(), FRotator().ZeroRotator, true);
-	}
-	if (OverlapSound)
-	{
-		UGameplayStatics::PlaySound2D(this, OverlapSound);
+		AMainCharacter* MainCharREF = Cast<AMainCharacter>(OtherActor);
+
+		if (MainCharREF)
+		{
+			if (OverlapParticle != nullptr)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), OverlapParticle, GetActorLocation(), FRotator().ZeroRotator, true);
+			}
+			if (OverlapSound)
+			{
+				UGameplayStatics::PlaySound2D(this, OverlapSound);
+			}
+		}
 	}
 }
 
