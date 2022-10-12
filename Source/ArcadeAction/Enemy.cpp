@@ -28,6 +28,7 @@ AEnemy::AEnemy():EnemyMovementStatus(EEnemyMovementStatus::EMS_Idle)
 
 	CombateTarget = nullptr;
 
+	HitSound = nullptr;
 
 	/** Enemy properties*/
 

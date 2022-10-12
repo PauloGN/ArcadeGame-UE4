@@ -28,6 +28,8 @@ AWeapon::AWeapon():OnEquippeSound(nullptr), WeaponState(EWeaponState::EWS_Pickup
 	CombatBoxComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	//Response to Pawn obj and generate overlap events only
 	CombatBoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+
+	SwingSound = nullptr;
 }
 
 void AWeapon::BeginPlay()
@@ -85,6 +87,10 @@ void AWeapon::OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EnemyREF->HitParticles, EnemyREF->GetActorLocation(), FRotator().ZeroRotator, false);
 			}
+			if (EnemyREF->HitSound)
+			{
+				UGameplayStatics::PlaySound2D(this, EnemyREF->HitSound);
+			}
 		}
 	}
 }
@@ -131,4 +137,12 @@ void AWeapon::ActivateCollision()
 void AWeapon::DeactivateCollision()
 {
 	CombatBoxComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AWeapon::PlaySwingSound()
+{
+	if (SwingSound)
+	{
+		UGameplayStatics::PlaySound2D(this, SwingSound);
+	}
 }

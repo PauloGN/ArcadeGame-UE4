@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Combat")
 	float Damage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
+	USoundCue* SwingSound;
+
 protected:
 
 
@@ -71,5 +74,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void DeactivateCollision();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat | Sound")
+	void PlaySwingSound();
 
 };

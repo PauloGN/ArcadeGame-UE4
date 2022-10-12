@@ -9,6 +9,9 @@
 #include "Weapon.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "Kismet/GamePlayStatics.h"
+#include "Sound/SoundCue.h"
+
 
 // Sets default values
 AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),ActiveOverlappingItem(nullptr), EquippedWeapon(nullptr)
@@ -383,10 +386,10 @@ void AMainCharacter::AttackPerformed_LMB_Pressed()
 
 		if (AnimInstance && CombatMontage)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, "ATTACKING...");
 			AnimInstance->Montage_Play(CombatMontage, SpeedRate);
 			AnimInstance->Montage_JumpToSection(AttackFname, CombatMontage);
 		}
+
 	}
 }
 
