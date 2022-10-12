@@ -27,6 +27,15 @@ AEnemy::AEnemy():EnemyMovementStatus(EEnemyMovementStatus::EMS_Idle)
 	bOverlappingCombatSphere = false;
 
 	CombateTarget = nullptr;
+
+
+	/** Enemy properties*/
+
+		Health = 75.f ;
+		MAXHealth = 100.f;
+		DamagePower = 10.f;
+
+		HitParticles = nullptr; 
 }
 
 // Called when the game starts or when spawned
@@ -76,8 +85,6 @@ void AEnemy::AgroOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 			MoveToTarget(MainChar);
 		}
 	}
-
-
 }
 
 void AEnemy::AgroOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)

@@ -35,17 +35,41 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Skeletal Mesh")
 	class USkeletalMeshComponent* SkeletalMesh;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Combat")
+	class UBoxComponent* CombatBoxComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Combat")
+	float Damage;
+
+protected:
+
+
+	virtual void BeginPlay()override;
+
 
 
 public:
 
-
+	/** Operlapping Functions */
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)override;
 	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
+
+	UFUNCTION()
+	void OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnCombatBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 
 	void Equip(class AMainCharacter* Char);
 	
 	FORCEINLINE void SetWeaponState(EWeaponState EWS){ WeaponState = EWS; }
 	FORCEINLINE EWeaponState SetWeaponState(){ return WeaponState; }
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ActivateCollision();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void DeactivateCollision();
 
 };
