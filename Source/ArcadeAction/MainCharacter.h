@@ -112,9 +112,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	class USoundCue* HitSound;
 
+	//Interpolation
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	class AEnemy* CombatTarget;
+	FORCEINLINE void SetCombatTarget(AEnemy* Target){ CombatTarget = Target; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	/** Interpolation controllers*/
+
+	float InterpSpeed;
+	bool bInterpToEnemy;
+	void SetInterptoEnemy(bool bIntep);
 
 public:	
 	// Called every frame
@@ -177,5 +188,12 @@ public:
 private:
 
 	FName GetAttackAnimationName();
+
+	void UpdateStaminaStatus(float& DeltaTime);
+
+	//Interpolation
+	FRotator LookAtRotationYaw(FVector Target);
+	void ActorFaceEnemy(float DeltaTime);
+
 
 };

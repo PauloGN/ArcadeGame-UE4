@@ -142,6 +142,7 @@ void AEnemy::CombatOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 		
 		if (MainChar)
 		{
+			MainChar->SetCombatTarget(this);
 			CombateTarget = MainChar;
 			bOverlappingCombatSphere = true;
 			Attack();
@@ -158,6 +159,7 @@ void AEnemy::CombatOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 
 		if (MainChar)
 		{
+			MainChar->SetCombatTarget(nullptr);
 			bOverlappingCombatSphere = false;
 			//SetEnemyMovementStatus(EEnemyMovementStatus::EMS_MoveToTarget);
 			//MoveToTarget(MainChar);
