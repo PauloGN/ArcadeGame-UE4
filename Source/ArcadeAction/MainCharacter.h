@@ -60,8 +60,12 @@ public:
 	/**Base turns rates to scale turning functions for the camera*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseTurnRate;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	float BaseLookUpRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	class UParticleSystem* HitParticles;
 
 	/**
 	/*
@@ -104,6 +108,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Amimation")
 	class UAnimMontage* CombatMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
+	class USoundCue* HitSound;
 
 protected:
 	// Called when the game starts or when spawned

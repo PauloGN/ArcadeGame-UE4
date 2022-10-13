@@ -61,6 +61,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	class USoundCue* HitSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
+	USoundCue* AttackSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
+	class UBoxComponent* BoxCombatComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	class UAnimMontage* CombatMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
+	bool bAttacking;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -89,5 +101,29 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void MoveToTarget(class AMainCharacter* TargetToFollow);
+
+	UFUNCTION(BlueprintCallable, Category = "AI | Sound")
+	void PlaySoundAttack(class AMainCharacter* TargetToFollow);
 	
+	UFUNCTION()
+	void OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnCombatBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void ActivateCollision();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void DeactivateCollision();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void AttackEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void Attack();
+
+private:
+
+	FName GetAttackAnimationName();
 };
