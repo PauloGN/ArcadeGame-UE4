@@ -33,7 +33,8 @@ public:
 	//Used to detect players on range
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class USphereComponent* AgroSphere;
-
+	
+	//Used to detect player on attack range
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	USphereComponent* CombatSphere;
 
@@ -55,23 +56,36 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
 	float DamagePower;
 
+	//FX to spawn when attacked by the anemy
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Properties")
 	class UParticleSystem* HitParticles;
 
+	//Audio FX to play when attacked  by the enemy
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	class USoundCue* HitSound;
 
+	//My attack sound
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	USoundCue* AttackSound;
 
+	//Box component to apply damage on event  begin overlap
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI")
 	class UBoxComponent* BoxCombatComponent;
 
+	//to hold attack and death Animation 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	class UAnimMontage* CombatMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
 	bool bAttacking;
+
+	//** Attack delay properties*/
+
+	FTimerHandle AttackTimerHandle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float AttackMinTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float AttackMaxTime;
 
 protected:
 	// Called when the game starts or when spawned
@@ -105,6 +119,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AI | Sound")
 	void PlaySoundAttack(class AMainCharacter* TargetToFollow);
 	
+	//Box collision to aply damage / activate and deactivate based on the animnotify called via blueprint
+
 	UFUNCTION()
 	void OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 

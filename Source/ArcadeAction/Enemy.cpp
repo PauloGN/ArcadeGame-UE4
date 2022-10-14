@@ -11,6 +11,7 @@
 #include "Kismet/GamePlayStatics.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Animation/AnimInstance.h"
+#include "TimerManager.h"
 
 
 
@@ -45,12 +46,18 @@ AEnemy::AEnemy():EnemyMovementStatus(EEnemyMovementStatus::EMS_Idle)
 	CombatMontage = nullptr;
 	/** Enemy properties*/
 
-		Health = 75.f ;
-		MAXHealth = 100.f;
-		DamagePower = 10.f;
+	Health = 75.f ;
+	MAXHealth = 100.f;
+	DamagePower = 10.f;
 
-		HitParticles = nullptr;
-		AttackSound = nullptr;
+	HitParticles = nullptr;
+	AttackSound = nullptr;
+
+	/** Delay attack*/
+
+	AttackMaxTime = 0.5f;
+	AttackMinTime = 0.1f;
+
 }
 
 // Called when the game starts or when spawned
@@ -167,9 +174,10 @@ void AEnemy::CombatOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 			{
 				MoveToTarget(MainChar);
 				//CombateTarget = nullptr;
-			}
-			
+			}			
 			EnemyMovementStatus = EEnemyMovementStatus::EMS_MoveToTarget;
+			//Reseting the timer handle
+			GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 		}
 	}
 }
@@ -201,9 +209,7 @@ void AEnemy::MoveToTarget(AMainCharacter* Target)
 
 		}
 		*/
-
 	}
-
 }
 
 void AEnemy::PlaySoundAttack(AMainCharacter* TargetToFollow)
@@ -268,7 +274,11 @@ void AEnemy::AttackEnd()
 
 	if (bOverlappingCombatSphere)
 	{
-		Attack();
+		//Delay between attacks
+		float AttackTime = FMath::FRandRange(AttackMinTime, AttackMaxTime);
+
+		//Setting up the timer to attack acording to the AttackTime period
+		GetWorldTimerManager().SetTimer(AttackTimerHandle, this,&AEnemy::Attack, AttackTime);
 	}
 }
 

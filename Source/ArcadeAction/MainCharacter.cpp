@@ -323,13 +323,12 @@ void AMainCharacter::Attackfinished()
 	if (EquippedWeapon)
 	{
 		bAttacking = false;
-
+		bInterpToEnemy = false;
 		//if the mouse keep down attack again
 		if (bLeftMouseButtomDown)
 		{
 			AttackPerformed_LMB_Pressed();
 		}
-
 		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Attack Finish called via blueprint (Animation)...");
 	}
 }
