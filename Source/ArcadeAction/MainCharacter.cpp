@@ -13,6 +13,7 @@
 #include "Kismet/GamePlayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Enemy.h"
+#include "MainPlayerController.h"
 
 
 // Sets default values
@@ -71,6 +72,9 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),Activ
 		//interpolation
 		InterpSpeed = 15.f;
 		bInterpToEnemy = false;
+
+		/** */
+		MainPlayerController = nullptr;
 }
 
 void AMainCharacter::ShowPickUpLocations()
@@ -86,6 +90,8 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	MainPlayerController = Cast<AMainPlayerController>(GetController());
+
 }
 
 void AMainCharacter::SetInterptoEnemy(bool bIntep)
@@ -104,6 +110,15 @@ void AMainCharacter::Tick(float DeltaTime)
 	//Interpolatting
 	ActorFaceEnemy(DeltaTime);
 
+	//Getting location to place the widget
+	if (CombatTarget)
+	{
+		CombatTargetLocation = CombatTarget->GetActorLocation();
+		if (MainPlayerController)
+		{
+			MainPlayerController->EnemyLocation = CombatTargetLocation;
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -248,6 +263,12 @@ void AMainCharacter::DecrementHealth(const float dmg)
 
 }
 
+float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCouser)
+{
+	DecrementHealth(DamageAmount);
+	return DamageAmount;
+}
+
 void AMainCharacter::IncrementCoin(const int32 value)
 {
 	if (Coins + value <= 1000)
@@ -263,7 +284,14 @@ void AMainCharacter::IncrementCoin(const int32 value)
 
 void AMainCharacter::Die()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Game Over...");
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && CombatMontage)
+	{
+		AnimInstance->Montage_Play(CombatMontage, 1.f);
+		AnimInstance->Montage_JumpToSection(FName("Death"), CombatMontage);
+	}
+	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Game Over...");
 }
 
 

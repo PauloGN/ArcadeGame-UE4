@@ -44,12 +44,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
 	USoundCue* SwingSound;
 
+	//Apply Damage params
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<UDamageType> DamageTypeClass;
+
+	//Going to use the mainChar controller here
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	AController* WeaponInstigator;
+
+
+
 protected:
 
-
 	virtual void BeginPlay()override;
-
-
 
 public:
 
@@ -68,6 +75,8 @@ public:
 	
 	FORCEINLINE void SetWeaponState(EWeaponState EWS){ WeaponState = EWS; }
 	FORCEINLINE EWeaponState SetWeaponState(){ return WeaponState; }
+	//Weap apply dmg
+	FORCEINLINE void SetInstigator(AController* Inst){ WeaponInstigator = Inst; }
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ActivateCollision();

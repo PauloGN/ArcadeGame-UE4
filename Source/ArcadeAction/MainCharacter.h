@@ -40,6 +40,7 @@ public:
 	* aggregation
 	***/
 
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
 	class AWeapon* EquippedWeapon;
 	
@@ -117,6 +118,16 @@ public:
 	class AEnemy* CombatTarget;
 	FORCEINLINE void SetCombatTarget(AEnemy* Target){ CombatTarget = Target; }
 
+	//** */
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Controller")
+	class AMainPlayerController* MainPlayerController;
+
+	//** */
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat")
+	FVector CombatTargetLocation;//Location to place the enemy Widget
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -173,6 +184,9 @@ public:
 	void Running_ShiftKeyUp();
 
 	void DecrementHealth(const float dmg);
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCouser)override;
+
 	void IncrementCoin(const int32 value);
 	void Die();
 	//E key

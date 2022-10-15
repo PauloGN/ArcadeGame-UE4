@@ -91,6 +91,13 @@ void AWeapon::OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 			{
 				UGameplayStatics::PlaySound2D(this, EnemyREF->HitSound);
 			}
+
+			//Checking to apply damage
+			if (DamageTypeClass && WeaponInstigator)
+			{
+				UGameplayStatics::ApplyDamage(EnemyREF, Damage, WeaponInstigator, this, DamageTypeClass);
+			}
+
 		}
 	}
 }
@@ -103,6 +110,8 @@ void AWeapon::Equip(AMainCharacter* Char)
 {
 	if (Char)
 	{
+		SetInstigator(Char->GetController());
+
 		//Dont Get the Camera zooming in if the weapon is in the way
 		SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 		SkeletalMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);

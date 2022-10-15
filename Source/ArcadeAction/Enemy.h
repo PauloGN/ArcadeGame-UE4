@@ -13,6 +13,7 @@ UENUM(BlueprintType)
 	EMS_Idle			UMETA(DisplayName = "Idle"),
 	EMS_MoveToTarget	UMETA(DisplayName = "MoveToTarget"),
 	EMS_Attacking		UMETA(DisplayName = "Attacking"),
+	EMS_Dead			UMETA(DisplayName = "Dead"),
 	EMS_MAX				UMETA(DisplayName = "Default")
 };
 
@@ -87,6 +88,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float AttackMaxTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<UDamageType> DamageTypeClass;
+
+
+	/** Death Delay*/
+
+	FTimerHandle DeathTimerHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float DeathDelay;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -127,6 +139,9 @@ public:
 	UFUNCTION()
 	void OnCombatBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	//Called by apply damage from UGameplay statics 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCouser)override;
+
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ActivateCollision();
 
@@ -139,7 +154,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Attack();
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void DeathEnd();
 private:
 
 	FName GetAttackAnimationName();
+	void Die();
+
+	bool IsAlive();
+
+	void Disappear();
+
 };
