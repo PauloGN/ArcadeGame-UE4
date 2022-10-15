@@ -327,6 +327,15 @@ void AEnemy::Attack()
 		return;
 	}
 
+	if (CombateTarget)
+	{
+		if (CombateTarget->MovementStatus == EMovementStatus::EMS_Dead)
+		{
+			return;
+		}
+	}
+
+
 	if (AIController)
 	{
 		AIController->StopMovement();

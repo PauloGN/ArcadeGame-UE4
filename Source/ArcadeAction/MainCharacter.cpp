@@ -9,6 +9,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Weapon.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Kismet/GamePlayStatics.h"
 #include "Sound/SoundCue.h"
@@ -128,7 +129,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	check(PlayerInputComponent);
 
 	//Action Inputs 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ThisClass::ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ThisClass::Sprinting_ShiftKeyDown);
@@ -154,6 +155,12 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::MoveForward(float input)
 {
+
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	uint8 bCanMoveForward = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
 	if (bCanMoveForward)
 	{
@@ -169,6 +176,11 @@ void AMainCharacter::MoveForward(float input)
 
 void AMainCharacter::MoveRight(float input)
 {
+
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
 
 	uint8 bCanMoveRight = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
 
@@ -284,19 +296,37 @@ void AMainCharacter::IncrementCoin(const int32 value)
 
 void AMainCharacter::Die()
 {
+
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	if (AnimInstance && CombatMontage)
 	{
-		AnimInstance->Montage_Play(CombatMontage, 1.f);
+		AnimInstance->Montage_Play(CombatMontage, 0.6f);
 		AnimInstance->Montage_JumpToSection(FName("Death"), CombatMontage);
+		SetMovementStatus(EMovementStatus::EMS_Dead);
 	}
-	//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Game Over...");
+}
+
+void AMainCharacter::DeathEnd()
+{
+	GetMesh()->bNoSkeletonUpdate = true;
+	GetMesh()->bPauseAnims = true;
 }
 
 
 void AMainCharacter::ActionPerformed_E_Pressed()
 {
+
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	bActionPerformed = true;
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key pressed...");
 
@@ -309,19 +339,21 @@ void AMainCharacter::ActionPerformed_E_Pressed()
 			wep->Equip(this);
 			SetActiveOverlappingItem(nullptr);
 		}
-
 	}
-
 }
 void AMainCharacter::ActionPerformed_E_UP()
 {
 	bActionPerformed = false;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key Released...");
 }
 
 //Attack
 void AMainCharacter::AttackPerformed_LMB_Pressed()
 {
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	bLeftMouseButtomDown = true;
 	if (EquippedWeapon && (!bAttacking))
 	{
@@ -337,13 +369,20 @@ void AMainCharacter::AttackPerformed_LMB_Pressed()
 			AnimInstance->Montage_Play(CombatMontage, SpeedRate);
 			AnimInstance->Montage_JumpToSection(AttackFname, CombatMontage);
 		}
-
 	}
 }
 
 void AMainCharacter::AttackPerformed_LMB_UP()
 {
 	bLeftMouseButtomDown = false;
+}
+
+void AMainCharacter::Jump()
+{
+	if (MovementStatus != EMovementStatus::EMS_Dead)
+	{
+		Super::Jump();
+	}
 }
 
 void AMainCharacter::Attackfinished()
@@ -388,6 +427,12 @@ FName AMainCharacter::GetAttackAnimationName()
 
 void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)
 {
+
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	//how much the stamina should change in this particular frame
 	float DeltaStamina = StaminaDrainRate * DeltaTime;
 
@@ -499,6 +544,11 @@ FRotator AMainCharacter::LookAtRotationYaw(FVector Target)
 
 void AMainCharacter::ActorFaceEnemy(float DeltaTime)
 {
+	if (MovementStatus == EMovementStatus::EMS_Dead)
+	{
+		return;
+	}
+
 	if (bInterpToEnemy && CombatTarget)
 	{
 		FRotator LookAtYaw = LookAtRotationYaw(CombatTarget->GetActorLocation());

@@ -11,6 +11,7 @@ enum class EMovementStatus : uint8
 {
 	EMS_Normal UMETA(DisplayName, "Normal"),
 	EMS_Sprinting UMETA(DisplayName, "Sprinting"),
+	EMS_Dead UMETA(DisplayName, "Dead"),
 	EMS_MAX UMETA(DisplayName, "DefaultMAX")
 };
 
@@ -189,15 +190,22 @@ public:
 
 	void IncrementCoin(const int32 value);
 	void Die();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats | Movement")
+	void DeathEnd();
+
 	//E key
 	void ActionPerformed_E_Pressed();
 	void ActionPerformed_E_UP();
+
 	//Left mouse buttom
 	void AttackPerformed_LMB_Pressed();
 	void AttackPerformed_LMB_UP();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | Movement")
 	void Attackfinished();
+
+	virtual void Jump()override;
 
 private:
 
