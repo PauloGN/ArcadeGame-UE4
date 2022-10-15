@@ -23,3 +23,16 @@ Where the following features will be explored:
 + Bombs, explosives and hazards
 + Logging and drawing spheres for debug purposes
 + Using C++ concepts applied to game development
+
+#### ✨Controllers
+#### Keyboard and Mouse
++ W → Move Forward
++ S ← Move Backward
++ A→ Move Left 
++ D ← Move Right
+
++ E → Action Bottom
++ Left-Shift → Sprint 
++ Space → Jump
+
++ Left Mouse Button → Attack
