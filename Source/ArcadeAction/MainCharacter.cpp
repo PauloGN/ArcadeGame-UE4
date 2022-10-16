@@ -111,7 +111,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	//Interpolatting
 	ActorFaceEnemy(DeltaTime);
 
-	//Getting location to place the widget
+	//Getting location to place the widget of the enemy
 	if (CombatTarget)
 	{
 		CombatTargetLocation = CombatTarget->GetActorLocation();
@@ -253,7 +253,6 @@ void AMainCharacter::Sprinting_ShiftKeyDown()
 {
 	bShiftKeydown = true;
 	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Sprinting...");
-
 }
 
 void AMainCharacter::Running_ShiftKeyUp()
@@ -427,15 +426,33 @@ FName AMainCharacter::GetAttackAnimationName()
 
 void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)
 {
-
+	//No stamina/velocity/animation change if you are dead
 	if (MovementStatus == EMovementStatus::EMS_Dead)
 	{
 		return;
 	}
 
+	//No stamina/velocity/animation change if you are holding the leftshift key while not moving
+	const FVector CurrentCharVelocity = GetCharacterMovement()->Velocity;
+	if (CurrentCharVelocity.Size() == 0.f && bShiftKeydown)
+	{
+		SetMovementStatus(EMovementStatus::EMS_Normal);
+
+		//Penalty to keep holding the left shift key.
+		const float DeltaStamina = StaminaDrainRate * DeltaTime;
+		Stamina -= DeltaStamina;
+
+		if (Stamina - DeltaStamina <= 0.f)
+		{
+			Stamina = 0.f;
+			SetStaminaStatus(EStaminaStatus::ESS_Exhausted);
+		}
+
+		return;
+	}
+
 	//how much the stamina should change in this particular frame
 	float DeltaStamina = StaminaDrainRate * DeltaTime;
-
 
 	switch (StaminaStatus)
 	{
