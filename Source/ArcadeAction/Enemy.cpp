@@ -28,6 +28,9 @@ AEnemy::AEnemy():EnemyMovementStatus(EEnemyMovementStatus::EMS_Idle)
 	AgroSphere = CreateAbstractDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
 	AgroSphere->SetupAttachment(GetRootComponent());
 	AgroSphere->InitSphereRadius(600.f);
+	//AgroSphere should ignore the Wolrd Dinamic types like the Explosion sphere collision.
+	AgroSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+
 
 	//Range of attack
 	CombatSphere = CreateAbstractDefaultSubobject<USphereComponent>(TEXT("CombatSphere"));
@@ -36,7 +39,8 @@ AEnemy::AEnemy():EnemyMovementStatus(EEnemyMovementStatus::EMS_Idle)
 
 	//Range to apply damage
 	BoxCombatComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCombateComponent"));
-	BoxCombatComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("b_MF_Weapon_R_Socket"));
+	BoxCombatComponent->SetupAttachment(GetMesh(), FName("WeaponSocket"));
+	//BoxCombatComponent->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName("WeaponSocket"));
 
 	bOverlappingCombatSphere = false;
 	bAttacking = false;
@@ -237,7 +241,7 @@ void AEnemy::PlaySoundAttack(AMainCharacter* TargetToFollow)
 	}
 }
 
-//Box To Apply damage
+//Combate Box the one to Apply damage
 
 void AEnemy::OnCombateBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
