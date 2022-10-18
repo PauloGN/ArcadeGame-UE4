@@ -188,7 +188,12 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCouser)override;
 
+	//increment section for PICK UPS BP
+	UFUNCTION(BlueprintCallable)
 	void IncrementCoin(const int32 value);
+	UFUNCTION(BlueprintCallable)
+	void IncrementHealth(const float value);
+
 	void Die();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | Movement")

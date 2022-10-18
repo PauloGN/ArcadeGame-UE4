@@ -99,6 +99,9 @@ void AEnemy::BeginPlay()
 	//Response to Pawn obj and generate overlap events only
 	BoxCombatComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
+	//Ask the mesh and then capsule component to ignore the camera collison
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 }
 
 // Called every frame
@@ -228,9 +231,13 @@ void AEnemy::MoveToTarget(AMainCharacter* Target)
 
 		//Variable will be filled in with importantes informations such as Path points
 		FNavPathSharedPtr NavPath;
+
 		AIController->MoveTo(MoveRequest, &NavPath);
 
-		TArray<FNavPathPoint> PathPoints = NavPath->GetPathPoints();
+		if (NavPath)
+		{
+			TArray<FNavPathPoint> PathPoints = NavPath->GetPathPoints();
+		}
 
 		/*
 		for (FNavPathPoint& point: PathPoints)
@@ -321,7 +328,10 @@ void AEnemy::AttackEnd()
 	
 	if (EnemyMovementStatus != EEnemyMovementStatus::EMS_Attacking)
 	{
-		MoveToTarget(CombateTarget);
+		if (CombateTarget)
+		{
+			MoveToTarget(CombateTarget);
+		}
 	}
 
 	if (bOverlappingCombatSphere)

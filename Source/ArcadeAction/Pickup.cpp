@@ -5,8 +5,9 @@
 #include "MainCharacter.h"
 
 
-APickup::APickup():CoinAmount(1)
+APickup::APickup()
 {
+
 }
 
 void APickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -20,12 +21,10 @@ void APickup::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 
 		if (MainCharREF)
 		{
-			MainCharREF->IncrementCoin(CoinAmount);
+			OnPickupBP(MainCharREF);
 			MainCharREF->PickUpLocations.Add(GetActorLocation());
-
 			Destroy();
 		}
-
 	}
 }
 

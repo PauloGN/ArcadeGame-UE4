@@ -292,6 +292,18 @@ void AMainCharacter::IncrementCoin(const int32 value)
 	}
 }
 
+void AMainCharacter::IncrementHealth(const float value)
+{
+	if (Health + value < MaxHealth)
+	{
+		Health += value;
+	}
+	else
+	{
+		Health = MaxHealth;
+	}
+}
+
 void AMainCharacter::Die()
 {
 
