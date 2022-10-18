@@ -159,7 +159,7 @@ public:
 private:
 
 	FName GetAttackAnimationName();
-	void Die();
+	void Die(AActor* dmgCauser);
 
 	bool IsAlive();
 

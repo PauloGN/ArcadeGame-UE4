@@ -52,7 +52,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	AController* WeaponInstigator;
 
-
+	class AMainCharacter* CharREFCauser;
 
 protected:
 
@@ -71,7 +71,7 @@ public:
 	void OnCombatBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-	void Equip(class AMainCharacter* Char);
+	void Equip(AMainCharacter* Char);
 	
 	FORCEINLINE void SetWeaponState(EWeaponState EWS){ WeaponState = EWS; }
 	FORCEINLINE EWeaponState SetWeaponState(){ return WeaponState; }

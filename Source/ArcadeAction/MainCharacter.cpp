@@ -252,7 +252,6 @@ void AMainCharacter::SetEquippedWeapon(AWeapon* weap)
 void AMainCharacter::Sprinting_ShiftKeyDown()
 {
 	bShiftKeydown = true;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Sprinting...");
 }
 
 void AMainCharacter::Running_ShiftKeyUp()
@@ -327,7 +326,6 @@ void AMainCharacter::ActionPerformed_E_Pressed()
 	}
 
 	bActionPerformed = true;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Key pressed...");
 
 	if (ActiveOverlappingItem)
 	{
@@ -384,6 +382,53 @@ void AMainCharacter::Jump()
 	}
 }
 
+void AMainCharacter::UpdateCombatTarget()
+{
+
+	TArray<AActor*>OverlappingActors;
+	GetOverlappingActors(OverlappingActors, EnemyFilter);
+
+	if (OverlappingActors.Num() == 0)
+	{
+		if (MainPlayerController)
+		{
+			MainPlayerController->RemoveEnemyHealthBar();
+		}
+		return;
+	}
+
+	AEnemy* ClosestEnemy = Cast<AEnemy>(OverlappingActors[0]);
+	//Getting the closest enemy surounding the player
+	if (ClosestEnemy)
+	{
+		FVector MyLocation = GetActorLocation();
+
+		float MinDistance = (ClosestEnemy->GetActorLocation() - MyLocation).Size();
+
+		for (auto OverlappingActor : OverlappingActors)
+		{
+			AEnemy* Enemy = Cast<AEnemy>(OverlappingActor);
+			if (Enemy)
+			{
+				float ActorDistance = (Enemy->GetActorLocation() - MyLocation).Size();
+				if (ActorDistance < MinDistance)
+				{
+					MinDistance = ActorDistance;
+					ClosestEnemy = Enemy;
+				}
+			}
+		}
+
+		//Display the enemy helath bar
+		if (MainPlayerController)
+		{
+			MainPlayerController->DisplayEnemyHealthBar();
+		}
+		//Set the new combat target to the closest enemy arround
+		SetCombatTarget(ClosestEnemy);
+	}
+}
+
 void AMainCharacter::Attackfinished()
 {
 	if (EquippedWeapon)
@@ -395,7 +440,6 @@ void AMainCharacter::Attackfinished()
 		{
 			AttackPerformed_LMB_Pressed();
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Attack Finish called via blueprint (Animation)...");
 	}
 }
 
@@ -469,7 +513,7 @@ void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)
 			{
 				Stamina -= DeltaStamina;
 			}
-			GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Yellow, "NORMAL STATE Key ----> down");
+
 			SetMovementStatus(EMovementStatus::EMS_Sprinting);
 		}
 		else//Shift is up
@@ -483,15 +527,12 @@ void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)
 				Stamina += DeltaStamina;
 			}
 			SetMovementStatus(EMovementStatus::EMS_Normal);
-			GEngine->AddOnScreenDebugMessage(1, 15.f, FColor::Yellow, "NORMAL STATE Key ----> UP");
-
 		}
 		break;
 	case EStaminaStatus::ESS_BelowMinimum:
 
 		if (bShiftKeydown)
 		{
-			GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Yellow, "BELOW STATE Key ----> down");
 
 			if (Stamina - DeltaStamina <= 0.f)
 			{
@@ -518,7 +559,6 @@ void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)
 				Stamina += DeltaStamina;
 			}
 			SetMovementStatus(EMovementStatus::EMS_Normal);
-			GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Yellow, "BELOW STATE Key ----> Up");
 
 		}
 		break;

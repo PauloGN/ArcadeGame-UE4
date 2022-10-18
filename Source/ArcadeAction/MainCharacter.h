@@ -207,6 +207,12 @@ public:
 
 	virtual void Jump()override;
 
+	//Function to update my combatTarget in game
+	void UpdateCombatTarget();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<AEnemy> EnemyFilter;
+
 private:
 
 	FName GetAttackAnimationName();

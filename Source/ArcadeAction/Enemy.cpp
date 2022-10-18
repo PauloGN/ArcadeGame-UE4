@@ -13,6 +13,7 @@
 #include "TimerManager.h"
 #include "Components/CapsuleComponent.h"
 #include "MainPlayerController.h"
+#include "Weapon.h"
 
 
 
@@ -145,10 +146,7 @@ void AEnemy::AgroOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* 
 			}
 			SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Idle);
 
-			if (MainChar->MainPlayerController)
-			{
-				MainChar->MainPlayerController->RemoveEnemyHealthBar();
-			}
+			MainChar->UpdateCombatTarget();
 
 			if (MainChar->CombatTarget == this)
 			{
@@ -171,10 +169,8 @@ void AEnemy::CombatOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 			CombateTarget = MainChar;
 			bOverlappingCombatSphere = true;
 			Attack();
-			if (MainChar->MainPlayerController && CombateTarget)
-			{
-				MainChar->MainPlayerController->DisplayEnemyHealthBar();
-			}
+		
+			MainChar->UpdateCombatTarget();
 		}
 	}
 
@@ -182,7 +178,7 @@ void AEnemy::CombatOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 
 void AEnemy::CombatOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherActor && IsAlive())
+	if (OtherActor && IsAlive() && OtherComp)
 	{
 		AMainCharacter* MainChar = Cast<AMainCharacter>(OtherActor);
 
@@ -192,6 +188,21 @@ void AEnemy::CombatOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 			bOverlappingCombatSphere = false;
 		
 			EnemyMovementStatus = EEnemyMovementStatus::EMS_MoveToTarget;
+
+			if (MainChar->CombatTarget == this)
+			{
+				MainChar->SetCombatTarget(nullptr);
+				MainChar->UpdateCombatTarget();
+			}
+			//Remove Enemy helth bar if the player mesh end overlapping
+			if (MainChar->MainPlayerController)
+			{
+				USkeletalMeshComponent* MainCharMesh = Cast<USkeletalMeshComponent>(OtherComp);
+				if (MainCharMesh)
+				{
+					MainChar->MainPlayerController->RemoveEnemyHealthBar();
+				}
+			}
 			//Reseting the timer handle
 			GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 		}
@@ -296,7 +307,7 @@ float AEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEv
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.0f;
-		Die();
+		Die(DamageCouser);
 		return DamageAmount;
 	}
 	Health -= DamageAmount;
@@ -376,7 +387,6 @@ void AEnemy::DeathEnd()
 	GetWorldTimerManager().SetTimer(DeathTimerHandle, this, &AEnemy::Disappear, DeathDelay);
 }
 
-
 //Generate radon attack
 FName AEnemy::GetAttackAnimationName()
 {
@@ -402,10 +412,12 @@ FName AEnemy::GetAttackAnimationName()
 
 }
 
-void AEnemy::Die()
+void AEnemy::Die(AActor* dmgCauser)
 {
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Dead);
+
+	AWeapon* WeaponCauser = Cast<AWeapon>(dmgCauser);
 
 	if (AnimInstance)
 	{
@@ -417,6 +429,12 @@ void AEnemy::Die()
 	AgroSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CombatSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	if (WeaponCauser)
+	{
+		WeaponCauser->CharREFCauser->UpdateCombatTarget();
+	}
+
 }
 
 bool AEnemy::IsAlive()

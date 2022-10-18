@@ -30,6 +30,8 @@ AWeapon::AWeapon():OnEquippeSound(nullptr), WeaponState(EWeaponState::EWS_Pickup
 	CombatBoxComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
 	SwingSound = nullptr;
+	WeaponInstigator = nullptr;
+	CharREFCauser = nullptr;
 }
 
 void AWeapon::BeginPlay()
@@ -53,7 +55,7 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 
 		if (CharREF)
 		{
-
+			CharREFCauser = CharREF;
 			CharREF->SetActiveOverlappingItem(this);
 			//Equip(CharREF);
 		}
