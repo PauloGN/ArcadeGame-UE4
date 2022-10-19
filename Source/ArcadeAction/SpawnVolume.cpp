@@ -5,7 +5,8 @@
 #include "Components/BoxComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/World.h"
-#include "Critter.h"
+#include "Enemy.h"
+#include "AIController.h"
 
 // Sets default values
 ASpawnVolume::ASpawnVolume()
@@ -15,21 +16,18 @@ ASpawnVolume::ASpawnVolume()
 
 	SpawningBox = CreateDefaultSubobject<UBoxComponent>("Spawning Box");
 
-
 }
 
 // Called when the game starts or when spawned
 void ASpawnVolume::BeginPlay()
 {
-	Super::BeginPlay();
-	
+	Super::BeginPlay();	
 }
 
 // Called every frame
 void ASpawnVolume::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 FVector ASpawnVolume::GetSpawnPoint()
@@ -43,7 +41,20 @@ FVector ASpawnVolume::GetSpawnPoint()
 	return Point;
 }
 
-void ASpawnVolume::SpawnEnemyPawn_Implementation(UClass* ToSpawn, const FVector& Location)
+TSubclassOf<AActor> ASpawnVolume::GetSpawnActor()
+{
+
+	if (ActorsCollection.Num() > 0)
+	{
+		int32 Index = FMath::RandRange(0, ActorsCollection.Num() - 1);
+
+		return ActorsCollection[Index];
+	}
+
+	return nullptr;
+}
+
+void ASpawnVolume::SpawnActor_Implementation(UClass* ToSpawn, const FVector& Location)
 {
 	if (ToSpawn)
 	{
@@ -51,7 +62,20 @@ void ASpawnVolume::SpawnEnemyPawn_Implementation(UClass* ToSpawn, const FVector&
 		FActorSpawnParameters SpawnParams;
 		if (World)
 		{
-			ACritter* CritterSpawned = World->SpawnActor<ACritter>(ToSpawn, Location, FRotator().ZeroRotator, SpawnParams);
+			AActor* Actor =  World->SpawnActor<AActor>(ToSpawn, Location, FRotator().ZeroRotator, SpawnParams);
+
+			AEnemy* Enemy = Cast<AEnemy>(Actor);
+
+			if (Enemy)
+			{
+				Enemy->SpawnDefaultController();
+				AAIController* Controller = Cast<AAIController>(Enemy->GetController());
+				if (Controller)
+				{
+					Enemy->AIController = Controller;
+				}
+			}
+
 		}
 	}
 

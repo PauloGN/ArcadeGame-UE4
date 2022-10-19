@@ -218,6 +218,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TSubclassOf<AEnemy> EnemyFilter;
 
+	void SwitchLevel(const FName LevelName);
+
 private:
 
 	FName GetAttackAnimationName();

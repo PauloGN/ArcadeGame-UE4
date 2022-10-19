@@ -455,6 +455,25 @@ void AMainCharacter::Attackfinished()
 	}
 }
 
+
+void AMainCharacter::SwitchLevel(const FName LevelName)
+{
+
+	UWorld* World = GetWorld();
+
+	if (World)
+	{
+		//converting the fstring to string literal using the asterisc operator
+		FName CurrentLevelName = *(World->GetMapName());
+		if (CurrentLevelName != LevelName)
+		{
+			UGameplayStatics::OpenLevel(World, LevelName);
+		}
+	}
+
+
+}
+
 //Generate radon attack
 FName AMainCharacter::GetAttackAnimationName()
 {
