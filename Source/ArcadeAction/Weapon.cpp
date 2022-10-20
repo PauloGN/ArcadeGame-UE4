@@ -10,6 +10,7 @@
 #include "Kismet/GamePlayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Enemy.h"
+#include "Components/SphereComponent.h"
 
 
 AWeapon::AWeapon():OnEquippeSound(nullptr), WeaponState(EWeaponState::EWS_Pickup), Damage(25.f)
@@ -32,6 +33,8 @@ AWeapon::AWeapon():OnEquippeSound(nullptr), WeaponState(EWeaponState::EWS_Pickup
 	SwingSound = nullptr;
 	WeaponInstigator = nullptr;
 	CharREFCauser = nullptr;
+	bDeactiveteEffetAfterPickedUp = true;
+	WeaponName = FString("None");
 }
 
 void AWeapon::BeginPlay()
@@ -134,9 +137,16 @@ void AWeapon::Equip(AMainCharacter* Char)
 		if (OnEquippeSound && WeaponState == EWeaponState::EWS_Pickup)
 		{
 			UGameplayStatics::PlaySound2D(this, OnEquippeSound);
-			IdleParticleComponent->Deactivate();
 			WeaponState = EWeaponState::EWS_Equipped;
+
+			/** if true will deactivate the particle effect from the weapon after being picked up*/
+			if (bDeactiveteEffetAfterPickedUp)
+			{
+				IdleParticleComponent->Deactivate();
+			}
 		}
+		//Deactivate collison volume inherited from Item(Parent class)
+		CollisionVolume->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 

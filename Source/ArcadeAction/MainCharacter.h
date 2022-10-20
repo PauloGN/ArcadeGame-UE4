@@ -42,7 +42,7 @@ public:
 	***/
 
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Items")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
 	class AWeapon* EquippedWeapon;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
@@ -219,6 +219,17 @@ public:
 	TSubclassOf<AEnemy> EnemyFilter;
 
 	void SwitchLevel(const FName LevelName);
+
+	//SAVE AND LOAD
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
+	void SaveGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
+	void LoadGame(bool bSetPosition);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Stats | SaveGame")
+	TSubclassOf<class AItemStorage> ItemStorage;//used to store any blueprints(actors) that I want in this case we are going to save weaponsBP
 
 private:
 

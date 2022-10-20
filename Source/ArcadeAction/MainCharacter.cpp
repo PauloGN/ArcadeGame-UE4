@@ -15,6 +15,8 @@
 #include "Sound/SoundCue.h"
 #include "Enemy.h"
 #include "MainPlayerController.h"
+#include "ArcadeSaveGame.h"
+#include "ItemStorage.h"
 
 
 // Sets default values
@@ -92,7 +94,6 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	MainPlayerController = Cast<AMainPlayerController>(GetController());
-
 }
 
 void AMainCharacter::SetInterptoEnemy(bool bIntep)
@@ -470,8 +471,74 @@ void AMainCharacter::SwitchLevel(const FName LevelName)
 			UGameplayStatics::OpenLevel(World, LevelName);
 		}
 	}
+}
 
+// SAVE AND LOAD
 
+void AMainCharacter::SaveGame()
+{
+	UArcadeSaveGame* ArcadeSaveGameInstance =  Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+
+	if (ArcadeSaveGameInstance)
+	{
+		ArcadeSaveGameInstance->CharacterStats.Health = Health;
+		ArcadeSaveGameInstance->CharacterStats.MaxHealth = MaxHealth;
+		ArcadeSaveGameInstance->CharacterStats.Stamina = Stamina;
+		ArcadeSaveGameInstance->CharacterStats.MaxStamina = MaxStamina;
+		ArcadeSaveGameInstance->CharacterStats.Coins = Coins;
+
+		if (EquippedWeapon)
+		{
+			ArcadeSaveGameInstance->CharacterStats.WeaponName = EquippedWeapon->WeaponName;
+		}
+
+		ArcadeSaveGameInstance->CharacterStats.Location = GetActorLocation();
+		ArcadeSaveGameInstance->CharacterStats.Rotation = GetActorRotation();
+
+		UGameplayStatics::SaveGameToSlot(ArcadeSaveGameInstance, ArcadeSaveGameInstance->PlayerName, ArcadeSaveGameInstance->UserIndex);
+	}
+}
+
+void AMainCharacter::LoadGame(bool bSetPosition)
+{
+	UArcadeSaveGame* ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+
+	if (ArcadeLoadGameInstance)
+	{
+		ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::LoadGameFromSlot(ArcadeLoadGameInstance->PlayerName, ArcadeLoadGameInstance->UserIndex));
+		
+		Health = ArcadeLoadGameInstance->CharacterStats.Health;
+		MaxHealth = ArcadeLoadGameInstance->CharacterStats.MaxHealth;
+		Stamina = ArcadeLoadGameInstance->CharacterStats.Stamina;
+		MaxStamina = ArcadeLoadGameInstance->CharacterStats.MaxStamina;
+		Coins = ArcadeLoadGameInstance->CharacterStats.Coins;
+
+		if (bSetPosition)
+		{
+			SetActorLocation(ArcadeLoadGameInstance->CharacterStats.Location);
+			SetActorRotation(ArcadeLoadGameInstance->CharacterStats.Rotation);
+		}
+
+		if (ItemStorage)
+		{
+			AItemStorage* Weapon =  GetWorld()->SpawnActor<AItemStorage>(ItemStorage);
+
+			if (Weapon)
+			{
+				FString WeaponName = ArcadeLoadGameInstance->CharacterStats.WeaponName;
+
+				if (Weapon->WeaponCollecionMAP.Contains(WeaponName))
+				{
+					AWeapon* WeaponToEquipe = GetWorld()->SpawnActor<AWeapon>(Weapon->WeaponCollecionMAP[WeaponName]);		
+					WeaponToEquipe->Equip(this);
+				}
+			}
+		}
+
+		MovementStatus = EMovementStatus::EMS_Normal;
+		GetMesh()->bNoSkeletonUpdate = false;
+		GetMesh()->bPauseAnims = false;
+	}
 }
 
 //Generate radon attack

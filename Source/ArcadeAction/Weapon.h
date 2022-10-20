@@ -52,11 +52,19 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	AController* WeaponInstigator;
 
+	//Idle/Permanent effetc
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | States")
+	bool bDeactiveteEffetAfterPickedUp;
+
 	class AMainCharacter* CharREFCauser;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	FString WeaponName;
 
 protected:
 
 	virtual void BeginPlay()override;
+
 
 public:
 
@@ -84,7 +92,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void DeactivateCollision();
 
-	UFUNCTION(BlueprintCallable, Category = "Combat | Sound")
+	UFUNCTION(BlueprintCallable, Category = "Item | Sound")
 	void PlaySwingSound();
 
 };
