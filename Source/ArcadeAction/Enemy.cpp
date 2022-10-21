@@ -404,7 +404,6 @@ FName AEnemy::GetAttackAnimationName()
 	int32 Selection = FMath::RandRange(0, 1);
 	FName AttackName = FName("null");
 
-
 	switch (Selection)
 	{
 	case 0:

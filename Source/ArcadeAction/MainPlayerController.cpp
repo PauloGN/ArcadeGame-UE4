@@ -16,8 +16,6 @@ void AMainPlayerController::BeginPlay()
 	{
 		return;
 	}
-
-
 	HUDOverlay->AddToViewport();
 	HUDOverlay->SetVisibility(ESlateVisibility::Visible);
 

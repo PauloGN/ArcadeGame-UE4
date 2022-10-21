@@ -231,6 +231,9 @@ public:
 	//SAVE AND LOAD
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
+	void LoadNewGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
 	void SaveGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
@@ -257,5 +260,9 @@ private:
 	FRotator LookAtRotationYaw(FVector Target);
 	void ActorFaceEnemy(float DeltaTime);
 
+	//SAVE AND LOAD
+
+	// block save and load at this level ->> LevelName_ForLoadExceptionOnGameStart
+	bool LoadOnStart();
 
 };

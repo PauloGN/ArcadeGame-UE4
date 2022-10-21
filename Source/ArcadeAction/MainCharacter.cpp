@@ -97,7 +97,11 @@ void AMainCharacter::BeginPlay()
 	
 	MainPlayerController = Cast<AMainPlayerController>(GetController());
 
-	LoadGameOnBeguinPlay(false);
+	if (LoadOnStart())
+	{
+		LoadGameOnBeguinPlay(false);
+	}
+
 
 	if (MainPlayerController)
 	{
@@ -378,6 +382,7 @@ void AMainCharacter::ActionPerformed_E_Pressed()
 		{
 			wep->Equip(this);
 			SetActiveOverlappingItem(nullptr);
+
 		}
 	}
 }
@@ -491,7 +496,6 @@ void AMainCharacter::Attackfinished()
 
 void AMainCharacter::SwitchLevel(const FName LevelName)
 {
-
 	UWorld* World = GetWorld();
 
 	if (World)
@@ -507,8 +511,21 @@ void AMainCharacter::SwitchLevel(const FName LevelName)
 
 // SAVE AND LOAD
 
+void AMainCharacter::LoadNewGame()
+{
+
+	UArcadeSaveGame* ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+
+	if (ArcadeSaveGameInstance)
+	{
+		ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart = TEXT("");
+	}
+	SwitchLevel(TEXT("Test_Map"));
+}
+
 void AMainCharacter::SaveGame()
 {
+
 	UArcadeSaveGame* ArcadeSaveGameInstance =  Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 
 	UWorld* World = GetWorld();
@@ -526,7 +543,8 @@ void AMainCharacter::SaveGame()
 		{
 			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
 			ArcadeSaveGameInstance->CharacterStats.LevelName = CurrentLevelName;
-			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, CurrentLevelName);
+			//Setting this level as an exception to allow loading game on beguin play
+			ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart = CurrentLevelName;
 		}
 
 		if (EquippedWeapon)
@@ -602,7 +620,6 @@ void AMainCharacter::LoadGame(bool bSetPosition)
 		if (ArcadeLoadGameInstance->CharacterStats.LevelName != TEXT(""))
 		{
 			const FName LevelName(ArcadeLoadGameInstance->CharacterStats.LevelName);
-			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, ArcadeLoadGameInstance->CharacterStats.LevelName);
 			SwitchLevel(LevelName);
 		}
 	}
@@ -610,6 +627,7 @@ void AMainCharacter::LoadGame(bool bSetPosition)
 
 void AMainCharacter::LoadGameOnBeguinPlay(bool bSetPosition)
 {
+
 	UWorld* World = GetWorld();
 	UArcadeSaveGame* ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 
@@ -847,4 +865,30 @@ void AMainCharacter::ActorFaceEnemy(float DeltaTime)
 		FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtYaw, DeltaTime, InterpSpeed);
 		SetActorRotation(InterpRotation);
 	}
+}
+
+
+bool AMainCharacter::LoadOnStart()
+{
+
+	UArcadeSaveGame* ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+	ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::LoadGameFromSlot(ArcadeSaveGameInstance->PlayerName, ArcadeSaveGameInstance->UserIndex));
+
+	UWorld* World = GetWorld();
+	bool bShouldLoad = false;
+
+	if (ArcadeSaveGameInstance)
+	{
+		if (World)
+		{
+			const FString CheckLevelExceptionName = ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart;
+			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+
+			if (CurrentLevelName == CheckLevelExceptionName)
+			{
+				bShouldLoad = true;
+			}
+		}
+	}
+	return bShouldLoad;
 }

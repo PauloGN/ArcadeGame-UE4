@@ -41,8 +41,12 @@ struct FCharacterStats
 
 	//Level Ref
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SaveGameData | Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SaveGameData | Map")
 	FString LevelName = TEXT("");
+
+	//***  Use this variable to say the game do not load game in this level name
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SaveGameData | Map")
+	FString LevelName_ForLoadExceptionOnGameStart = TEXT("");
 };
 
 /**
