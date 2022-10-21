@@ -37,7 +37,12 @@ struct FCharacterStats
 	//Items
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SaveGameData | Item")
-	FString WeaponName = TEXT("");;
+	FString WeaponName = TEXT("");
+
+	//Level Ref
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SaveGameData | Item")
+	FString LevelName = TEXT("");
 };
 
 /**

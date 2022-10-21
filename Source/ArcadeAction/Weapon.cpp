@@ -132,6 +132,7 @@ void AWeapon::Equip(AMainCharacter* Char)
 			//Set the weapon ref to the char
 			Char->SetEquippedWeapon(this);
 			Char->SetActiveOverlappingItem(nullptr);
+			CharREFCauser = Char;
 		}
 		//Play sound effect
 		if (OnEquippeSound && WeaponState == EWeaponState::EWS_Pickup)

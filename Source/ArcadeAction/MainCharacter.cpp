@@ -78,6 +78,8 @@ AMainCharacter::AMainCharacter(): BaseTurnRate(65.f), BaseLookUpRate(65.f),Activ
 
 		/** */
 		MainPlayerController = nullptr;
+		bPauseMenuActivated = false;
+
 }
 
 void AMainCharacter::ShowPickUpLocations()
@@ -94,6 +96,15 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	MainPlayerController = Cast<AMainPlayerController>(GetController());
+
+	LoadGameOnBeguinPlay(false);
+
+	if (MainPlayerController)
+	{
+		FInputModeGameOnly GameInputMode;
+		MainPlayerController->SetInputMode(GameInputMode);
+		MainPlayerController->bShowMouseCursor = false;
+	}
 }
 
 void AMainCharacter::SetInterptoEnemy(bool bIntep)
@@ -146,23 +157,21 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
 	//Mouse Inputs based on inherited function from APawn
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ThisClass::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &ThisClass::LookUp);
 	//Keyboard arrows inputs - Rotation
 	PlayerInputComponent->BindAxis("TurnRate", this, &ThisClass::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ThisClass::LookUpAtRate);
 
+	/**Pause Menu Buttons*/
+	PlayerInputComponent->BindAction("PauseMenu", IE_Pressed, this, &ThisClass::PauseMenuActivated);
 }
 
 void AMainCharacter::MoveForward(float input)
 {
 
-	if (MovementStatus == EMovementStatus::EMS_Dead)
-	{
-		return;
-	}
+	uint8 bCanMoveForward = CanMove(input);
 
-	uint8 bCanMoveForward = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
 	if (bCanMoveForward)
 	{
 		//Find out witch way is forward from the controller perpective
@@ -177,13 +186,7 @@ void AMainCharacter::MoveForward(float input)
 
 void AMainCharacter::MoveRight(float input)
 {
-
-	if (MovementStatus == EMovementStatus::EMS_Dead)
-	{
-		return;
-	}
-
-	uint8 bCanMoveRight = (Controller != nullptr) && (input != 0.0f) && (!bAttacking);
+	uint8 bCanMoveRight = CanMove(input);
 
 	if (bCanMoveRight)
 	{
@@ -200,7 +203,7 @@ void AMainCharacter::MoveRight(float input)
 void AMainCharacter::TurnAtRate(float rate)
 {
 	UWorld* world = GetWorld();
-	if (world)
+	if (world && CanMove(rate))
 	{
 		const float rateInput = rate * BaseTurnRate * world->GetDeltaSeconds();
 		AddControllerYawInput(rateInput);
@@ -210,11 +213,39 @@ void AMainCharacter::TurnAtRate(float rate)
 void AMainCharacter::LookUpAtRate(float rate)
 {
 	UWorld* world = GetWorld();
-	if (world)
+	if (world && CanMove(rate))
 	{
 		const float rateInput = rate * BaseTurnRate * world->GetDeltaSeconds();
 		AddControllerPitchInput(rateInput);
 	}
+}
+
+//Called for yaw rotatin
+void AMainCharacter::Turn(float input)
+{
+	if (CanMove(input))
+	{
+		AddControllerYawInput(input);
+	}
+}
+
+//called for pitch rotation
+void AMainCharacter::LookUp(float input)
+{
+	if (CanMove(input))
+	{
+		AddControllerPitchInput(input);
+	}
+}
+
+bool AMainCharacter::CanMove(float input)
+{
+
+	if (MainPlayerController)
+	{
+		return (Controller != nullptr) && (!bAttacking) && (MovementStatus != EMovementStatus::EMS_Dead) && (!bPauseMenuActivated) && (input != 0.f);
+	}
+	return false;
 }
 
 void AMainCharacter::SetMovementStatus(EMovementStatus eStatus)
@@ -271,7 +302,6 @@ void AMainCharacter::DecrementHealth(const float dmg)
 	{
 		Health -= dmg;
 	}
-
 }
 
 float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCouser)
@@ -329,11 +359,11 @@ void AMainCharacter::DeathEnd()
 	GetMesh()->bPauseAnims = true;
 }
 
-
+//Action Button
 void AMainCharacter::ActionPerformed_E_Pressed()
 {
 
-	if (MovementStatus == EMovementStatus::EMS_Dead)
+	if (MovementStatus == EMovementStatus::EMS_Dead || bPauseMenuActivated)
 	{
 		return;
 	}
@@ -359,12 +389,13 @@ void AMainCharacter::ActionPerformed_E_UP()
 //Attack
 void AMainCharacter::AttackPerformed_LMB_Pressed()
 {
-	if (MovementStatus == EMovementStatus::EMS_Dead)
+	if (MovementStatus == EMovementStatus::EMS_Dead || bPauseMenuActivated)
 	{
 		return;
 	}
 
 	bLeftMouseButtomDown = true;
+
 	if (EquippedWeapon && (!bAttacking))
 	{
 		SetInterptoEnemy(true);
@@ -387,9 +418,10 @@ void AMainCharacter::AttackPerformed_LMB_UP()
 	bLeftMouseButtomDown = false;
 }
 
+//Jump
 void AMainCharacter::Jump()
 {
-	if (MovementStatus != EMovementStatus::EMS_Dead)
+	if (MovementStatus != EMovementStatus::EMS_Dead && (!bPauseMenuActivated))
 	{
 		Super::Jump();
 	}
@@ -479,6 +511,8 @@ void AMainCharacter::SaveGame()
 {
 	UArcadeSaveGame* ArcadeSaveGameInstance =  Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 
+	UWorld* World = GetWorld();
+
 	if (ArcadeSaveGameInstance)
 	{
 		ArcadeSaveGameInstance->CharacterStats.Health = Health;
@@ -486,6 +520,14 @@ void AMainCharacter::SaveGame()
 		ArcadeSaveGameInstance->CharacterStats.Stamina = Stamina;
 		ArcadeSaveGameInstance->CharacterStats.MaxStamina = MaxStamina;
 		ArcadeSaveGameInstance->CharacterStats.Coins = Coins;
+
+		//Saving the level name with out prefixed name
+		if (World)
+		{
+			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+			ArcadeSaveGameInstance->CharacterStats.LevelName = CurrentLevelName;
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, CurrentLevelName);
+		}
 
 		if (EquippedWeapon)
 		{
@@ -501,6 +543,8 @@ void AMainCharacter::SaveGame()
 
 void AMainCharacter::LoadGame(bool bSetPosition)
 {
+
+	UWorld* World = GetWorld();
 	UArcadeSaveGame* ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 
 	if (ArcadeLoadGameInstance)
@@ -512,6 +556,22 @@ void AMainCharacter::LoadGame(bool bSetPosition)
 		Stamina = ArcadeLoadGameInstance->CharacterStats.Stamina;
 		MaxStamina = ArcadeLoadGameInstance->CharacterStats.MaxStamina;
 		Coins = ArcadeLoadGameInstance->CharacterStats.Coins;
+
+		//Loading the level name with out prefixed name
+		if (World)
+		{
+			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+			const FString LevelNameToGo = ArcadeLoadGameInstance->CharacterStats.LevelName;
+			
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, CurrentLevelName);
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, LevelNameToGo);
+
+			if (CurrentLevelName == LevelNameToGo)
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "It is the same");
+				bSetPosition = true;
+			}
+		}
 
 		if (bSetPosition)
 		{
@@ -538,7 +598,85 @@ void AMainCharacter::LoadGame(bool bSetPosition)
 		MovementStatus = EMovementStatus::EMS_Normal;
 		GetMesh()->bNoSkeletonUpdate = false;
 		GetMesh()->bPauseAnims = false;
+
+		if (ArcadeLoadGameInstance->CharacterStats.LevelName != TEXT(""))
+		{
+			const FName LevelName(ArcadeLoadGameInstance->CharacterStats.LevelName);
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, ArcadeLoadGameInstance->CharacterStats.LevelName);
+			SwitchLevel(LevelName);
+		}
 	}
+}
+
+void AMainCharacter::LoadGameOnBeguinPlay(bool bSetPosition)
+{
+	UWorld* World = GetWorld();
+	UArcadeSaveGame* ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+
+	if (ArcadeLoadGameInstance)
+	{
+		ArcadeLoadGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::LoadGameFromSlot(ArcadeLoadGameInstance->PlayerName, ArcadeLoadGameInstance->UserIndex));
+
+		Health = ArcadeLoadGameInstance->CharacterStats.Health;
+		MaxHealth = ArcadeLoadGameInstance->CharacterStats.MaxHealth;
+		Stamina = ArcadeLoadGameInstance->CharacterStats.Stamina;
+		MaxStamina = ArcadeLoadGameInstance->CharacterStats.MaxStamina;
+		Coins = ArcadeLoadGameInstance->CharacterStats.Coins;
+
+		//Loading the level name with out prefixed name
+		if (World)
+		{
+			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+			const FString LevelNameToGo = ArcadeLoadGameInstance->CharacterStats.LevelName;
+
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, CurrentLevelName);
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, LevelNameToGo);
+
+			if (CurrentLevelName == LevelNameToGo)
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "It is the same");
+				bSetPosition = true;
+			}
+		}
+
+		if (bSetPosition)
+		{
+			SetActorLocation(ArcadeLoadGameInstance->CharacterStats.Location);
+			SetActorRotation(ArcadeLoadGameInstance->CharacterStats.Rotation);
+		}
+
+		if (ItemStorage)
+		{
+			AItemStorage* Weapon = GetWorld()->SpawnActor<AItemStorage>(ItemStorage);
+
+			if (Weapon)
+			{
+				FString WeaponName = ArcadeLoadGameInstance->CharacterStats.WeaponName;
+
+				if (Weapon->WeaponCollecionMAP.Contains(WeaponName))
+				{
+					AWeapon* WeaponToEquipe = GetWorld()->SpawnActor<AWeapon>(Weapon->WeaponCollecionMAP[WeaponName]);
+					WeaponToEquipe->Equip(this);
+				}
+			}
+		}
+
+		MovementStatus = EMovementStatus::EMS_Normal;
+		GetMesh()->bNoSkeletonUpdate = false;
+		GetMesh()->bPauseAnims = false;
+	}
+}
+
+/** Pause Menu */
+
+void AMainCharacter::PauseMenuActivated()
+{
+
+	if (MainPlayerController)
+	{
+		bPauseMenuActivated = MainPlayerController->TogglePauseMenu();
+	}
+
 }
 
 //Generate radon attack
@@ -563,7 +701,6 @@ FName AMainCharacter::GetAttackAnimationName()
 	}
 
 	return AttackName;
-
 }
 
 void AMainCharacter::UpdateStaminaStatus(float& DeltaTime)

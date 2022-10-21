@@ -33,8 +33,18 @@ public:
 	UUserWidget* EnemyHealthBar;
 
 	bool bEnemyHealthBarVisible;
-	
+
 	FVector EnemyLocation;
+
+	/** PAUSE MENU*/
+		/** Reference to the UMG asset in the editor*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TSubclassOf<class UUserWidget> WPauseMenu;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Widget")
+	UUserWidget* PauseMenu;
+
+	bool bPauseMenuVisible;
 
 protected:
 
@@ -43,7 +53,16 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-
+	/** Enemy HUD */
 	void DisplayEnemyHealthBar();
 	void RemoveEnemyHealthBar();
+
+	/** Pause Menu HUD*/
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HUD")
+	void DisplayPauseMenu();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "HUD")
+	void RemovePauseMenu();
+
+	bool TogglePauseMenu();
 };

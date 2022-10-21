@@ -444,7 +444,6 @@ void AEnemy::Die(AActor* dmgCauser)
 	{
 		WeaponCauser->CharREFCauser->UpdateCombatTarget();
 	}
-
 }
 
 bool AEnemy::IsAlive()

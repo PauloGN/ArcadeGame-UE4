@@ -21,7 +21,7 @@ void AMainPlayerController::BeginPlay()
 	HUDOverlay->AddToViewport();
 	HUDOverlay->SetVisibility(ESlateVisibility::Visible);
 
-
+	//Hold the enemy health bar
 	if (WEnemyHealthBar)
 	{
 		EnemyHealthBar = CreateWidget<UUserWidget>(this, WEnemyHealthBar);
@@ -36,10 +36,22 @@ void AMainPlayerController::BeginPlay()
 			EnemyHealthBar->SetAlignmentInViewport(AlignmentVec);
 		}
 	}
+
+	//My Menu
+
+	if (WPauseMenu)
+	{
+		PauseMenu = CreateWidget<UUserWidget>(this, WPauseMenu);
+
+		if (PauseMenu)
+		{
+			//GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, "Controller...................");
+			PauseMenu->AddToViewport();
+			PauseMenu->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
 }
-
-
-
 
 void AMainPlayerController::Tick(float DeltaTime)
 {
@@ -76,4 +88,44 @@ void AMainPlayerController::RemoveEnemyHealthBar()
 		bEnemyHealthBarVisible = false;
 		EnemyHealthBar->SetVisibility(ESlateVisibility::Hidden);
 	}
+}
+/** MENU */
+void AMainPlayerController::DisplayPauseMenu_Implementation()
+{
+	if (PauseMenu)
+	{
+		bPauseMenuVisible = true;
+		PauseMenu->SetVisibility(ESlateVisibility::Visible);
+
+		//
+		FInputModeGameAndUI InputModeGameAndUI;
+		SetInputMode(InputModeGameAndUI);
+		bShowMouseCursor = true;
+	}
+}
+
+void AMainPlayerController::RemovePauseMenu_Implementation()
+{
+	if (PauseMenu)
+	{
+		bPauseMenuVisible = false;
+		//
+		FInputModeGameOnly InputModeGameOnly;
+		SetInputMode(InputModeGameOnly);
+		bShowMouseCursor = false;
+	}
+}
+
+bool AMainPlayerController::TogglePauseMenu()
+{
+
+	if (bPauseMenuVisible)
+	{
+		RemovePauseMenu();
+	}
+	else
+	{
+		DisplayPauseMenu();
+	}
+	return bPauseMenuVisible;
 }

@@ -20,7 +20,7 @@ public:
 
 	class UBillboardComponent* BillBoard;
 
-	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Transition");
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Transition")
 	FName NextLevel;
 
 protected:

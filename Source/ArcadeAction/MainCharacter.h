@@ -162,6 +162,14 @@ public:
 	*/
 	void LookUpAtRate(float rate);
 
+	//Called for yaw rotatin
+	void Turn(float input);
+
+	//called for pitch rotation
+	void LookUp(float input);
+
+	bool CanMove(float input);
+
 	bool bActionPerformed;
 
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -181,7 +189,7 @@ public:
 
 	//Pressed down to enable spriting
 	void Sprinting_ShiftKeyDown();
-	//Released to stops printing 
+	//Released to stop printing 
 	void Running_ShiftKeyUp();
 
 	void DecrementHealth(const float dmg);
@@ -228,8 +236,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
 	void LoadGame(bool bSetPosition);
 
+	void LoadGameOnBeguinPlay(bool bSetPosition = false);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Player Stats | SaveGame")
 	TSubclassOf<class AItemStorage> ItemStorage;//used to store any blueprints(actors) that I want in this case we are going to save weaponsBP
+
+	/** PAUSE MENU*/
+
+	void PauseMenuActivated();
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bPauseMenuActivated;
 
 private:
 

@@ -6,5 +6,4 @@
 UArcadeSaveGame::UArcadeSaveGame():PlayerName(FString("Defalt")), UserIndex(0)
 {
 
-
 }
