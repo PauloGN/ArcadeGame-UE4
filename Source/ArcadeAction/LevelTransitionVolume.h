@@ -18,10 +18,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Transition")
 	class UBoxComponent* BoxTransitionVolume;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Transition")
+	UBoxComponent* BoxSaveGameVolume;
+
 	class UBillboardComponent* BillBoard;
 
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Transition")
 	FName NextLevel;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,5 +37,8 @@ public:
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapBoxSaveGameVolume(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 };

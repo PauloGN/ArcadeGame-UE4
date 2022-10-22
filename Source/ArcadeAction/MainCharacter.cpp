@@ -513,17 +513,17 @@ void AMainCharacter::SwitchLevel(const FName LevelName)
 
 void AMainCharacter::LoadNewGame()
 {
-
 	UArcadeSaveGame* ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 
 	if (ArcadeSaveGameInstance)
 	{
-		ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart = TEXT("");
+		ArcadeSaveGameInstance->CharacterStats.bIsNewGame = true;
+		UGameplayStatics::SaveGameToSlot(ArcadeSaveGameInstance, TEXT("New"), ArcadeSaveGameInstance->UserIndex + 1);
 	}
-	SwitchLevel(TEXT("Test_Map"));
+	UGameplayStatics::OpenLevel(GetWorld(), "Test_Map");
 }
 
-void AMainCharacter::SaveGame()
+void AMainCharacter::SaveGame(const FString& NextLevel)
 {
 
 	UArcadeSaveGame* ArcadeSaveGameInstance =  Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
@@ -537,25 +537,38 @@ void AMainCharacter::SaveGame()
 		ArcadeSaveGameInstance->CharacterStats.Stamina = Stamina;
 		ArcadeSaveGameInstance->CharacterStats.MaxStamina = MaxStamina;
 		ArcadeSaveGameInstance->CharacterStats.Coins = Coins;
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Salvou dados");
 
 		//Saving the level name with out prefixed name
 		if (World)
 		{
 			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
 			ArcadeSaveGameInstance->CharacterStats.LevelName = CurrentLevelName;
-			//Setting this level as an exception to allow loading game on beguin play
+			//Setting this level as an exception to allow loading game in case game saved at this level
 			ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart = CurrentLevelName;
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Salvou Mapa atual");
+
+			if (NextLevel != TEXT(""))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Salvou Proximo Mapa");
+				ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnChangeLevel = NextLevel;
+			}
 		}
 
 		if (EquippedWeapon)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Salvou Arma Equipada");
 			ArcadeSaveGameInstance->CharacterStats.WeaponName = EquippedWeapon->WeaponName;
 		}
 
 		ArcadeSaveGameInstance->CharacterStats.Location = GetActorLocation();
 		ArcadeSaveGameInstance->CharacterStats.Rotation = GetActorRotation();
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, "Salvou Localização");
 
 		UGameplayStatics::SaveGameToSlot(ArcadeSaveGameInstance, ArcadeSaveGameInstance->PlayerName, ArcadeSaveGameInstance->UserIndex);
+		
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, ArcadeSaveGameInstance->PlayerName);
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Green, FString::Printf(TEXT("%d"),ArcadeSaveGameInstance->UserIndex));
 	}
 }
 
@@ -675,6 +688,8 @@ void AMainCharacter::LoadGameOnBeguinPlay(bool bSetPosition)
 				{
 					AWeapon* WeaponToEquipe = GetWorld()->SpawnActor<AWeapon>(Weapon->WeaponCollecionMAP[WeaponName]);
 					WeaponToEquipe->Equip(this);
+					/** If the weapon was equipped the game is going to be saved again to make sure that the weapon is saved*/
+					SaveGame();
 				}
 			}
 		}
@@ -867,9 +882,29 @@ void AMainCharacter::ActorFaceEnemy(float DeltaTime)
 	}
 }
 
-
 bool AMainCharacter::LoadOnStart()
 {
+	//Section to Hold New Game Functionalities
+	{
+		UArcadeSaveGame* ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
+
+		//Cheack New Game
+		ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("New"), ArcadeSaveGameInstance->UserIndex + 1));
+		if (ArcadeSaveGameInstance)
+		{
+			bool bIsNewGame = ArcadeSaveGameInstance->CharacterStats.bIsNewGame;
+			if (bIsNewGame)
+			{
+				//Reset to false
+				ArcadeSaveGameInstance->CharacterStats.bIsNewGame = false;
+				UGameplayStatics::SaveGameToSlot(ArcadeSaveGameInstance, TEXT("New"), ArcadeSaveGameInstance->UserIndex + 1);
+				//if the games is new return false to load on start playing
+				return false;
+			}
+		}
+	}
+
+	/** This is not a new game this section means that index 0 slot name Default was called from load button or save box  collider */
 
 	UArcadeSaveGame* ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::CreateSaveGameObject(UArcadeSaveGame::StaticClass()));
 	ArcadeSaveGameInstance = Cast<UArcadeSaveGame>(UGameplayStatics::LoadGameFromSlot(ArcadeSaveGameInstance->PlayerName, ArcadeSaveGameInstance->UserIndex));
@@ -882,9 +917,10 @@ bool AMainCharacter::LoadOnStart()
 		if (World)
 		{
 			const FString CheckLevelExceptionName = ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnGameStart;
+			const FString CheckLevelExceptionNameForNextLevel = ArcadeSaveGameInstance->CharacterStats.LevelName_ForLoadExceptionOnChangeLevel;
 			const FString CurrentLevelName = World->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
 
-			if (CurrentLevelName == CheckLevelExceptionName)
+			if (CurrentLevelName == CheckLevelExceptionName || CurrentLevelName == CheckLevelExceptionNameForNextLevel)
 			{
 				bShouldLoad = true;
 			}

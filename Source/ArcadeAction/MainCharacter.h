@@ -234,7 +234,7 @@ public:
 	void LoadNewGame();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
-	void SaveGame();
+	void SaveGame(const FString& NextLevel = TEXT(""));
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats | SaveGame")
 	void LoadGame(bool bSetPosition);
