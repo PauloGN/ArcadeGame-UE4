@@ -1,5 +1,5 @@
 # ArcadeGame-UE4
-<h1>EpochGames Assignment</h1>
+<h1>Assignment</h1>
 
 >Status: Developing ⚠️
 
